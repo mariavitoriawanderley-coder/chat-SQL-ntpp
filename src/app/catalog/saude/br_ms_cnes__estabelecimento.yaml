@@ -7,7 +7,7 @@
 # Depois de editar:  make validar-catalogo
 
 # ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
-id: br_ms_cnes.estabelecimento
+id: br_ms_cnes__estabelecimento
 dataset_id: br_ms_cnes
 table_id: estabelecimento
 nome_exibicao: CNES — Estabelecimentos de saúde
@@ -23,14 +23,14 @@ resumo: >
   sistema de informação oficial de cadastramento de informações acerca de todos os 
   estabelecimentos de saúde do país, independentemente de sua natureza jurídica ou 
   integração com o Sistema Único de Saúde (SUS). Os dados se referem à capacidade 
-  instalada e mão-de-obra assistencial de saúde no Brasil em estabelecimentos de 
+  instalada e mão de obra assistencial de saúde no Brasil em estabelecimentos de 
   saúde públicos ou privados. O CNES é a base cadastral para operacionalização de 
   diversos sistemas, tais como: Sistema de Informação Ambulatorial (SIA), Sistema de 
-  Informação Hospitalar (SIH), e- SUS Atenção Básica (e-SUS AB), entre outros. 
+  Informação Hospitalar (SIH), e-SUS Atenção Básica (e-SUS AB), entre outros. 
   Atualmente, o CNES é a ferramenta auxiliadora para uma gestão eficaz e eficiente, 
   proporcionando ao gestor o conhecimento da realidade da rede assistencial existente 
-  e suas potencialidades e, auxiliando no planejamento em saúde em todas as esferas 
-  administrativa do Governo.
+  e suas potencialidades e auxiliando no planejamento em saúde em todas as esferas 
+  administrativas do Governo.
 
   A tabela ESTABELECIMENTO fornece informações sobre a gestão e operação dos estabelecimentos de saúde brasileiros.
 
@@ -64,9 +64,9 @@ observacoes: |
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
 colunas: [
-  {nome: ano, descricao: Ano, tipo: INT64},
+  {nome: ano, descricao: Ano, tipo: INT64, particao: true},
   {nome: mes, descricao: Mês, tipo: INT64},
-  {nome: sigla_uf, descricao: Sigla da Unidade da Federação, tipo: STRING},
+  {nome: sigla_uf, descricao: Sigla da Unidade da Federação, tipo: STRING, particao: true},
   {nome: ano_atualizacao, descricao: Ano de atualização da informação pelo estabelecimento, tipo: INT64},
   {nome: mes_atualizacao, descricao: Mês de atualização da informação pelo estabelecimento, tipo: INT64},
   {nome: id_municipio, descricao: ID Município - IBGE 7 Dígitos, tipo: STRING},
@@ -74,15 +74,15 @@ colunas: [
   {nome: id_regiao_saude, descricao: ID da região de saúde NOAS, tipo: STRING},
   {nome: id_microrregiao_saude, descricao: ID da microrregião de saúde NOAS, tipo: STRING},
   {nome: id_distrito_sanitario, descricao: ID do módulo assistencial, tipo: STRING},
-  {nome: id_distrito_administrativo, descricao: ID do distrito adminstrativo, tipo: STRING},
+  {nome: id_distrito_administrativo, descricao: ID do distrito administrativo, tipo: STRING},
   {nome: cep, descricao: Código do CEP, tipo: STRING},
   {nome: id_estabelecimento_cnes, descricao: ID estabelecimento - CNES, tipo: STRING},
   {nome: tipo_pessoa, descricao: Indicador de pessoa física ou jurídica, tipo: STRING},
-  {nome: cpf_cnpj, descricao: CPF (caso pessoa física) ou CNPJ (caso pessoa jurídica) tipo: STRING},
+  {nome: cpf_cnpj, descricao: CPF (caso pessoa física) ou CNPJ (caso pessoa jurídica), tipo: STRING},
   {nome: tipo_grau_dependencia, descricao: ID do grau de dependência, tipo: STRING},
   {nome: cnpj_mantenedora, descricao: CNPJ da mantenedora, tipo: STRING},
-  {nome: tipo_retencao_tributos_mantenedora, descricao: Identifica do tipo de retenção de tributos da mantenedora, tipo: STRING},
-  {nome: indicador_vinculo_sus, descricao: Indica se tem vínculo com sus, tipo: INT64},
+  {nome: tipo_retencao_tributos_mantenedora, descricao: Identificação do tipo de retenção de tributos da mantenedora, tipo: STRING},
+  {nome: indicador_vinculo_sus, descricao: Indica se tem vínculo com o SUS, tipo: INT64},
   {nome: tipo_gestao, descricao: Tipo de gestão, tipo: STRING},
   {nome: tipo_esfera_administrativa, descricao: Esfera administrativa, tipo: STRING},
   {nome: tipo_retencao_tributos, descricao: Retenção de tributos, tipo: STRING},
@@ -108,7 +108,7 @@ colunas: [
   {nome: tipo_classificacao_acreditacao_hospitalar, descricao: Classificação da avaliação segundo o manual de acreditação hospitalar do Ministério da Saúde, tipo: STRING},
   {nome: ano_avaliacao_pnass, descricao: Ano da avaliação PNASS, tipo: INT64},
   {nome: mes_avaliacao_pnass, descricao: Mês da avaliação PNASS, tipo: INT64},
-  {nome: indicador_atencao_ambulatorial, descricao: Indica a existência atenção ambulatorial, tipo: INT64},
+  {nome: indicador_atencao_ambulatorial, descricao: Indica a existência de atenção ambulatorial, tipo: INT64},
   {nome: indicador_gestao_basica_ambulatorial_estadual, descricao: Indicador se a gestão da atividade atenção básica ambulatorial é estadual, tipo: INT64},
   {nome: indicador_gestao_basica_ambulatorial_municipal, descricao: Indicador se a gestão da atividade atenção básica ambulatorial é municipal, tipo: INT64},
   {nome: indicador_gestao_media_ambulatorial_estadual, descricao: Indicador se a gestão da atividade média complexidade ambulatorial é estadual, tipo: INT64},
@@ -169,21 +169,21 @@ colunas: [
   {nome: quantidade_sala_curativo_ambulatorial, descricao: Quantidade de salas de curativos (ambulatorial), tipo: INT64},
   {nome: quantidade_sala_cirurgia_ambulatorial, descricao: Quantidade de salas de cirurgia ambulatorial (ambulatorial), tipo: INT64},
   {nome: indicador_instalacao_hospitalar, descricao: Indica a existência de instalação física de atendimento hospitalar, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_centro_cirurgico, descricao: Indica a existência de instalação física de atendimento hospitalar- centro cirúrgico, tipo: INT64},
+  {nome: indicador_instalacao_hospitalar_centro_cirurgico, descricao: Indica a existência de instalação física de atendimento hospitalar - centro cirúrgico, tipo: INT64},
   {nome: quantidade_sala_cirurgia_centro_cirurgico, descricao: Quantidade de salas de cirurgias em centro cirúrgico, tipo: INT64},
   {nome: quantidade_sala_recuperacao_centro_cirurgico, descricao: Quantidade de salas de recuperação em centro cirúrgico, tipo: INT64},
   {nome: quantidade_leito_recuperacao_centro_cirurgico, descricao: Quantidade de leitos de recuperação em centro cirúrgico, tipo: INT64},
   {nome: quantidade_sala_cirurgia_ambulatorial_centro_cirurgico, descricao: Quantidade de salas de cirurgia ambulatorial em centro cirúrgico, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_centro_obstetrico, descricao: Indica a existência de instalação física de atendimento hospitalar- centro obstétrico, tipo: INT64},
+  {nome: indicador_instalacao_hospitalar_centro_obstetrico, descricao: Indica a existência de instalação física de atendimento hospitalar - centro obstétrico, tipo: INT64},
   {nome: quantidade_sala_pre_parto_centro_obstetrico, descricao: Quantidade de salas de pré-parto em centro obstétrico, tipo: INT64},
   {nome: quantidade_leito_pre_parto_centro_obstetrico, descricao: Quantidade de leitos de pré-parto em centro obstétrico, tipo: INT64},
   {nome: quantidade_sala_parto_normal_centro_obstetrico, descricao: Quantidade de salas de parto normal em centro obstétrico, tipo: INT64},
   {nome: quantidade_sala_curetagem_centro_obstetrico, descricao: Quantidade de salas de curetagem em centro obstétrico, tipo: INT64},
   {nome: quantidade_sala_cirurgia_centro_obstetrico, descricao: Quantidade de salas de cirurgias em centro obstétrico, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_neonatal, descricao: Indica a existência de instalação física de atendimento hospitalar- unidade neonatal, tipo: INT64},
-  {nome: quantidade_leito_recem_nascido_normal_neonatal, descricao: Quantidade de leitos de recém-nascido normal em unidadade neonatal, tipo: INT64},
-  {nome: quantidade_leito_recem_nascido_patologico_neonatal, descricao: Quantidade de leitos de recém-nascido patológico em unidadade neonatal, tipo: INT64},
-  {nome: quantidade_leito_conjunto_neonatal, descricao: Quantidade de leitos de alojamento conjunto em unidadade neonatal, tipo: INT64},
+  {nome: indicador_instalacao_hospitalar_neonatal, descricao: Indica a existência de instalação física de atendimento hospitalar - unidade neonatal, tipo: INT64},
+  {nome: quantidade_leito_recem_nascido_normal_neonatal, descricao: Quantidade de leitos de recém-nascido normal em unidade neonatal, tipo: INT64},
+  {nome: quantidade_leito_recem_nascido_patologico_neonatal, descricao: Quantidade de leitos de recém-nascido patológico em unidade neonatal, tipo: INT64},
+  {nome: quantidade_leito_conjunto_neonatal, descricao: Quantidade de leitos de alojamento conjunto em unidade neonatal, tipo: INT64},
   {nome: indicador_servico_apoio, descricao: Indica a existência de algum serviço de apoio, tipo: INT64},
   {nome: indicador_servico_same_spp_proprio, descricao: Indica a existência de serviço de Arquivo Médico e Estatística ou Serviço de Prontuário de Paciente próprio, tipo: INT64},
   {nome: indicador_servico_same_spp_terceirizado, descricao: Indica a existência de serviço de Arquivo Médico e Estatística ou Serviço de Prontuário de Paciente terceirizado, tipo: INT64},
@@ -211,7 +211,7 @@ colunas: [
   {nome: indicador_coleta_residuo_biologico, descricao: Indica a existência de coleta de resíduo biológico, tipo: INT64},
   {nome: indicador_coleta_residuo_quimico, descricao: Indica a existência de coleta de resíduo químico, tipo: INT64},
   {nome: indicador_coleta_rejeito_radioativo, descricao: Indica a existência de coleta de rejeitos radioativos, tipo: INT64},
-  {nome: indicador_coleta_rejeito_comum, descricao: Indica a existência de coleta de rejeitos comum, tipo: INT64},
+  {nome: indicador_coleta_rejeito_comum, descricao: Indica a existência de coleta de rejeitos comuns, tipo: INT64},
   {nome: indicador_comissao, descricao: Indica a existência de alguma comissão, tipo: INT64},
   {nome: indicador_comissao_etica_medica, descricao: Indica a existência de comissão de ética médica, tipo: INT64},
   {nome: indicador_comissao_etica_enfermagem, descricao: Indica a existência de comissão de ética de enfermagem, tipo: INT64},
@@ -220,49 +220,49 @@ colunas: [
   {nome: indicador_comissao_apropriacao_custos, descricao: Indica a existência de comissão de apropriação de custos, tipo: INT64},
   {nome: indicador_comissao_cipa, descricao: Indica a existência de comissão de CIPA, tipo: INT64},
   {nome: indicador_comissao_revisao_prontuario, descricao: Indica a existência de comissão de revisão de prontuários, tipo: INT64},
-  {nome: indicador_comissao_revisao_documentacao, descricao: Indica a existência decomissão de revisão de documentação médica e estatística, tipo: INT64},
+  {nome: indicador_comissao_revisao_documentacao, descricao: Indica a existência de comissão de revisão de documentação médica e estatística, tipo: INT64},
   {nome: indicador_comissao_analise_obito_biopisias, descricao: Indica a existência de comissão de análise de óbitos e biópsias, tipo: INT64},
   {nome: indicador_comissao_investigacao_epidemiologica, descricao: Indica a existência de comissão de investigação epidemiológica, tipo: INT64},
   {nome: indicador_comissao_notificacao_doencas, descricao: Indica a existência de comissão de notificação de doenças, tipo: INT64},
   {nome: indicador_comissao_zoonose_vetores, descricao: Indica a existência de comissão de controle de zoonoses e vetores, tipo: INT64},
   {nome: indicador_atendimento_prestado, descricao: Indica a existência de algum atendimento prestado, tipo: INT64},
-  {nome: indicador_atendimento_internacao_sus, descricao: Indica a existência de atendimento prestado internação/convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_internacao_sus, descricao: Indica a existência de atendimento prestado internação/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_internacao_particular, descricao: Indica a existência de atendimento prestado internação/convênio particular, tipo: INT64},
   {nome: indicador_atendimento_internacao_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado internação/convênio plano-seguro próprio, tipo: INT64},
   {nome: indicador_atendimento_internacao_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado internação/convênio plano-seguro terceiro, tipo: INT64},
   {nome: indicador_atendimento_internacao_plano_saude_publico, descricao: Indica a existência de atendimento prestado internação/convênio plano de saúde público, tipo: INT64},
   {nome: indicador_atendimento_internacao_plano_saude_privado, descricao: Indica a existência de atendimento prestado internação/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_sus, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_ambulatorial_sus, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_ambulatorial_particular, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano- seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano- seguro terceiro, tipo: INT64},
+  {nome: indicador_atendimento_ambulatorial_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano-seguro próprio, tipo: INT64},
+  {nome: indicador_atendimento_ambulatorial_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano-seguro terceiro, tipo: INT64},
   {nome: indicador_atendimento_ambulatorial_plano_saude_publico, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano de saúde público, tipo: INT64},
   {nome: indicador_atendimento_ambulatorial_plano_saude_privado, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_sadt_sus, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_sadt_sus, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_sadt_privado, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio particular, tipo: INT64},
   {nome: indicador_atendimento_sadt_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano-seguro próprio, tipo: INT64},
   {nome: indicador_atendimento_sadt_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano-seguro terceiro, tipo: INT64},
   {nome: indicador_atendimento_sadt_plano_saude_publico, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano de saúde público, tipo: INT64},
   {nome: indicador_atendimento_sadt_plano_saude_privado, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_sus, descricao: Indica a existência de atendimento prestado urgência/ convênio sus, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_privado, descricao: Indica a existência de atendimento prestado urgência/ convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado urgência/ convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado urgência/ convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_saude_publico, descricao: Indica a existência de atendimento prestado urgência/ convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_saude_privado, descricao: Indica a existência de atendimento prestado urgência/ convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_outros_sus, descricao: Indica a existência de atendimento prestado outros/ convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_sus, descricao: Indica a existência de atendimento prestado urgência/convênio SUS, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_privado, descricao: Indica a existência de atendimento prestado urgência/convênio particular, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado urgência/convênio plano-seguro próprio, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado urgência/convênio plano-seguro terceiro, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_plano_saude_publico, descricao: Indica a existência de atendimento prestado urgência/convênio plano de saúde público, tipo: INT64},
+  {nome: indicador_atendimento_urgencia_plano_saude_privado, descricao: Indica a existência de atendimento prestado urgência/convênio plano de saúde privado, tipo: INT64},
+  {nome: indicador_atendimento_outros_sus, descricao: Indica a existência de atendimento prestado outros/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_outros_privado, descricao: Indica a existência de atendimento prestado outros/convênio particular, tipo: INT64},
   {nome: indicador_atendimento_outros_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado outros/convênio plano-seguro próprio, tipo: INT64},
   {nome: indicador_atendimento_outros_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado outros/convênio plano-seguro terceiro, tipo: INT64},
   {nome: indicador_atendimento_outros_plano_saude_publico, descricao: Indica a existência de atendimento prestado outros/convênio plano de saúde público, tipo: INT64},
   {nome: indicador_atendimento_outros_plano_saude_privado, descricao: Indica a existência de atendimento prestado outros/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_sus, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_vigilancia_sus, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_vigilancia_privado, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio particular, tipo: INT64},
   {nome: indicador_atendimento_vigilancia_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano-seguro próprio, tipo: INT64},
   {nome: indicador_atendimento_vigilancia_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano-seguro terceiro, tipo: INT64},
   {nome: indicador_atendimento_vigilancia_plano_saude_publico, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano de saúde público, tipo: INT64},
   {nome: indicador_atendimento_vigilancia_plano_saude_privado, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_sus, descricao: Indica a existência de atendimento prestado regulação/convênio sus, tipo: INT64},
+  {nome: indicador_atendimento_regulacao_sus, descricao: Indica a existência de atendimento prestado regulação/convênio SUS, tipo: INT64},
   {nome: indicador_atendimento_regulacao_privado, descricao: Indica a existência de atendimento prestado regulação/convênio particular, tipo: INT64},
   {nome: indicador_atendimento_regulacao_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado regulação/convênio plano-seguro próprio, tipo: INT64},
   {nome: indicador_atendimento_regulacao_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado regulação/convênio plano-seguro terceiro, tipo: INT64},
@@ -271,12 +271,11 @@ colunas: [
 ]
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
-consultas_exemplo: [
-  SELECT COUNT(DISTINCT id_estabelecimento_cnes) 
-  FROM `basedosdados.br_ms_cnes.estabelecimento` 
-  WHERE
-  sigla_uf='PE'
-  AND tipo_unidade IN ('5','7','62') # tipos que são hospitais (https://apidadosabertos.saude.gov.br/cnes/tipounidades)
-
-  
-]
+consultas_exemplo:
+  - pergunta: Quantos hospitais existiam no Estado de Pernambuco?
+    sql: |
+      SELECT COUNT(DISTINCT id_estabelecimento_cnes)
+      FROM `basedosdados.br_ms_cnes.estabelecimento`
+      WHERE
+        sigla_uf = 'PE'
+        AND tipo_unidade IN ('5', '7', '62') # tipos que são hospitais (https://apidadosabertos.saude.gov.br/cnes/tipounidades)

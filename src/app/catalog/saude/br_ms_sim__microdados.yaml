@@ -1,45 +1,208 @@
-# GABARITO — preencha e troque `status` para `ativo`.
+# Preenchido com os metadados oficiais da Base dos Dados (API pública e tabela
+# br_ms_sim.dicionario), consultados em 13/10/2026. Revise e troque `status`
+# para `ativo`.
 #
 # O formato completo, campo a campo, está em `catalog/_schema.yaml`.
-# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
-# Dados antes de ativar: eles são o que vai no FROM da consulta.
-#
 # Depois de editar:  make validar-catalogo
 
 # ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
 id: br_ms_sim__microdados
 dataset_id: br_ms_sim
 table_id: microdados
-nome_exibicao: Sistema de Informação sobre Mortalidade
+nome_exibicao: Sistema de Informações sobre Mortalidade (SIM)
 area: saude
-fonte: Ministério da Saúde
-url_documentacao: https://basedosdados.org/dataset/br-ms-sim
+fonte: Ministério da Saúde (DataSUS)
+url_documentacao: https://basedosdados.org/dataset/5beeec93-cbf3-43f6-9eea-9bee6a0d1683?table=dea823a5-cad7-4014-b77c-4aa33b3b0541
 status: rascunho
 
 # ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
 #     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
 resumo: >
-  TODO — o que a tabela contém, quem produz, com que finalidade e que tipo
-  de pergunta ela responde.
+  Registro de todos os óbitos ocorridos no Brasil, produzido pelo Ministério
+  da Saúde (DataSUS) a partir da Declaração de Óbito. Cada linha é uma morte
+  individual, com a causa básica codificada pela CID-10, data e local do
+  óbito, município de residência e características da pessoa falecida, como
+  sexo, idade, raça/cor e escolaridade. Responde perguntas sobre quantas
+  pessoas morreram e de quê, mortalidade infantil e materna, mortes violentas
+  e por doenças específicas, por município, período ou perfil da população.
 
-palavras_chave: []
+palavras_chave: [óbito, morte, mortalidade, causa da morte, CID-10, declaração de óbito, mortalidade infantil, mortalidade materna, homicídio, suicídio, feminicídio, acidente de trânsito]
 
-perguntas_exemplo: []
+perguntas_exemplo:
+  - "Quantos homicídios aconteceram em Pernambuco por ano entre 2019 e 2023?"
+  - "Quais as principais causas de morte de moradores do Recife em 2023?"
+  - "Quantas mulheres morreram por causas maternas em Pernambuco em 2022?"
+  - "Qual o perfil de raça/cor das vítimas de homicídio no Estado de Pernambuco?"
 
 # ─── CARACTERÍSTICAS ──────────────────────────────────────────────
-grao: TODO — o que é UMA linha desta tabela.
-cobertura_temporal: { inicio: null, fim: null }
-cobertura_geografica: TODO
+grao: Uma linha por óbito registrado em Declaração de Óbito (inclui óbitos fetais).
+cobertura_temporal: { inicio: 1996, fim: 2026 }
+cobertura_geografica: Brasil, com identificação de UF e município de residência e de ocorrência
 # Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
 # aqui precisa existir em `colunas` com `particao: true`.
-particoes: []
+particoes: [ano, sigla_uf]
 sem_particao: false
-volume_aproximado: TODO
+volume_aproximado: 36,3 milhões de linhas
 observacoes: |
-  TODO — quebras de série, mudanças de codificação, anos atípicos.
+  Quase todas as colunas categóricas guardam CÓDIGOS em texto ('1', '2'...),
+  não o rótulo — o significado de cada código está em `nota`. 9 é "ignorado".
+  Para óbitos de pessoas nascidas vivas, filtre tipo_obito = '2' (não fetal).
+
+  A causa vem no código CID-10 sem ponto (ex.: 'X954'). Para o nome por
+  extenso, una com `basedosdados.br_bd_diretorios_brasil.cid_10` pela coluna
+  `subcategoria`. Grupos de causas se filtram pelos 3 primeiros caracteres:
+  homicídio = X85 a Y09; suicídio = X60 a X84; morte materna = capítulo O.
+  Prefira a CID a `circunstancia_obito`, que é mal preenchida.
+
+  Os anos mais recentes vêm da versão preliminar da fonte e ainda podem mudar
+  (coluna `dado_preliminar` = '1').
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
-colunas: []
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano do óbito.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da Unidade da Federação.
+    particao: true
+    valores_exemplo: [PE, AL, PB, BA, SP]
+
+  - nome: data_obito
+    tipo: DATE
+    descricao: Data do óbito.
+
+  - nome: id_municipio_residencia
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município onde a pessoa falecida morava.
+    valores_exemplo: ["2611606", "2604106", "2607901"]
+    nota: Para "mortes de moradores de X", use esta coluna. Recife = 2611606.
+
+  - nome: id_municipio_ocorrencia
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município onde o óbito ocorreu.
+    nota: Difere da residência quando a pessoa morre em hospital de outra cidade.
+
+  - nome: causa_basica
+    tipo: STRING
+    descricao: Causa básica do óbito, código CID-10 sem ponto (subcategoria de 4 caracteres).
+    valores_exemplo: [X954, I219, C349, J189]
+    nota: Nome por extenso em br_bd_diretorios_brasil.cid_10 (coluna subcategoria).
+
+  - nome: tipo_obito
+    tipo: STRING
+    descricao: Tipo do óbito.
+    valores_exemplo: ["1", "2"]
+    nota: 1 = Fetal; 2 = Não fetal.
+
+  - nome: circunstancia_obito
+    tipo: STRING
+    descricao: Circunstância do óbito por causa externa.
+    valores_exemplo: ["1", "2", "3", "4", "9"]
+    nota: 1 = Acidente; 2 = Suicídio; 3 = Homicídio; 4 = Outro; 9 = Ignorado. Mal preenchida — prefira a CID.
+
+  - nome: local_ocorrencia
+    tipo: STRING
+    descricao: Local onde o óbito ocorreu.
+    valores_exemplo: ["1", "2", "3", "4", "5"]
+    nota: 1 = Hospital; 2 = Outro estabelecimento de saúde; 3 = Domicílio; 4 = Via pública; 5 = Outros.
+
+  - nome: sexo
+    tipo: STRING
+    descricao: Sexo da pessoa falecida.
+    valores_exemplo: ["1", "2", "9"]
+    nota: 1 = Masculino; 2 = Feminino; 9 = Ignorado.
+
+  - nome: idade
+    tipo: FLOAT64
+    descricao: Idade da pessoa falecida.
+    nota: Unidade a confirmar (provavelmente anos) antes de montar faixas etárias.
+
+  - nome: raca_cor
+    tipo: STRING
+    descricao: Raça ou cor da pessoa falecida.
+    valores_exemplo: ["1", "2", "3", "4", "5", "9"]
+    nota: 1 = Branca; 2 = Preta; 3 = Amarela; 4 = Parda; 5 = Indígena; 9 = Ignorado. Negros = Preta + Parda.
+
+  - nome: escolaridade
+    tipo: STRING
+    descricao: Escolaridade da pessoa falecida, em anos de estudo concluídos.
+    valores_exemplo: ["1", "2", "3", "4", "5", "9"]
+    nota: 1 = Nenhuma; 2 = 1 a 3 anos; 3 = 4 a 7 anos; 4 = 8 a 11 anos; 5 = 12 anos ou mais; 9 = Ignorado.
+
+  - nome: estado_civil
+    tipo: STRING
+    descricao: Estado civil da pessoa falecida.
+    valores_exemplo: ["1", "2", "3", "4", "5", "9"]
+    nota: 1 = Solteiro(a); 2 = Casado(a); 3 = Viúvo(a); 4 = Separado(a); 5 = União consensual; 9 = Ignorado.
+
+  - nome: obito_gravidez
+    tipo: STRING
+    descricao: Indica se a mulher morreu durante a gravidez.
+    valores_exemplo: ["1", "2", "9"]
+    nota: 1 = Sim; 2 = Não; 9 = Ignorado.
+
+  - nome: obito_puerperio
+    tipo: STRING
+    descricao: Indica se a mulher morreu no puerpério (após o parto).
+    valores_exemplo: ["1", "2", "3", "9"]
+    nota: 1 = De 0 a 42 dias; 2 = De 43 dias a 1 ano; 3 = Não; 9 = Ignorado.
+
+  - nome: acidente_trabalho
+    tipo: STRING
+    descricao: Indica se o óbito decorreu de acidente de trabalho.
+    valores_exemplo: ["1", "2", "9"]
+    nota: 1 = Sim; 2 = Não; 9 = Ignorado.
+
+  - nome: dado_preliminar
+    tipo: STRING
+    descricao: Indica se o registro vem da versão preliminar da fonte, ainda sujeita a revisão.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Preliminar; 0 = Definitivo.
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
-consultas_exemplo: []
+consultas_exemplo:
+  - pergunta: Quantos homicídios aconteceram em Pernambuco por ano entre 2019 e 2023?
+    sql: |
+      SELECT ano, COUNT(*) AS homicidios
+      FROM `basedosdados.br_ms_sim.microdados`
+      WHERE sigla_uf = 'PE'
+        AND ano BETWEEN 2019 AND 2023
+        AND SUBSTR(causa_basica, 1, 3) BETWEEN 'X85' AND 'Y09'
+      GROUP BY ano
+      ORDER BY ano
+
+  - pergunta: Quais as 10 principais causas de morte de moradores do Recife em 2023?
+    sql: |
+      SELECT cid.descricao_categoria AS causa, COUNT(*) AS obitos
+      FROM `basedosdados.br_ms_sim.microdados` AS sim
+      LEFT JOIN (
+        SELECT DISTINCT subcategoria, descricao_categoria
+        FROM `basedosdados.br_bd_diretorios_brasil.cid_10`
+      ) AS cid ON sim.causa_basica = cid.subcategoria
+      WHERE sim.sigla_uf = 'PE'
+        AND sim.ano = 2023
+        AND sim.id_municipio_residencia = '2611606'
+        AND sim.tipo_obito = '2'
+      GROUP BY causa
+      ORDER BY obitos DESC
+      LIMIT 10
+
+  - pergunta: Quantas vítimas de homicídio em Pernambuco em 2022 eram negras, brancas ou de outra raça/cor?
+    sql: |
+      SELECT
+        CASE
+          WHEN raca_cor IN ('2', '4') THEN 'Negra (preta ou parda)'
+          WHEN raca_cor = '1' THEN 'Branca'
+          WHEN raca_cor IN ('3', '5') THEN 'Amarela ou indígena'
+          ELSE 'Ignorada'
+        END AS raca_cor,
+        COUNT(*) AS homicidios
+      FROM `basedosdados.br_ms_sim.microdados`
+      WHERE sigla_uf = 'PE'
+        AND ano = 2022
+        AND SUBSTR(causa_basica, 1, 3) BETWEEN 'X85' AND 'Y09'
+      GROUP BY raca_cor
+      ORDER BY homicidios DESC

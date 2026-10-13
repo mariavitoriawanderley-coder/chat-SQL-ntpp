@@ -1,0 +1,200 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+
+# ─── CAGED - MICRODADOS - MOVIMENTAÇÃO - FORA DO PRAZO ────────────────────────────────────────────────
+id: br_me_caged__microdados_movimentacao_fora_prazo
+dataset_id: br_me_caged
+table_id: microdados_movimentacao_fora_prazo
+nome_exibicao: Novo Caged — Movimentações de emprego entregues fora do prazo
+area: economia
+fonte: Ministério do Trabalho e Emprego
+url_documentacao: https://basedosdados.org/dataset/562b56a3-0b01-4735-a049-eeac5681f056?table=55547cad-3e88-4f7c-b27f-726b2b9b0b47
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Contém dados de movimentações de emprego (admissões e desligamentos) declaradas fora do prazo da competência de declaração. 
+  As declarações são enviadas pelos empregadores (então são somente empregos formais, ou seja, a pesquisa não inclui empregos informais).
+  Pode ser usada para conhecer as movimentações de emprego por setor (CNAE), ocupação, grau de instrução do trabalhador, horas trabalhadas, 
+  município, sexo, faixa etária, faixa salarial, escolaridade, tipo de empregador e tipo de deficiência do trabalhador.
+
+palavras_chave: [emprego, caged, salário, trabalho, mercado de trabalho, admissões, demissões, ocupação]
+
+perguntas_exemplo:
+  - "Quantos trabalhadores foram admitidos e demitidos no setor industrial por município de Pernambuco em 2025?"
+  - "Qual a faixa salarial média dos trabalhadores admitidos em Pernambuco em 2025 por ocupação e por município?"
+  - "Qual o saldo de admissões e desligamentos por faixa etária e sexo em Pernambuco entre 2022 e 2025?"
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: uma linha por tipo de movimentação, CNAE, mês da competência, ano da competência, UF, município, tipo de estabelecimento, CBO (Classificação Brasileira de Ocupações) e quantidade de movimentações.
+cobertura_temporal: { inicio: 2020, fim: 2026 }
+cobertura_geografica: Estado (UF) e município
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [mes,ano,sigla_uf]
+sem_particao: false
+volume_aproximado: 8.675.517 linhas
+observacoes: |
+  Serve de complemento à tabela br_me_caged.microdados_movimentacao, que contém as movimentações dentro do prazo.
+  Para acessar a API do IBGE, utilize o GET Disponível, substituindo {UF} pela sigla do 
+  Estado ou do Distrito Federal.
+  Endereço da API - https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+
+  - nome: ano
+    tipo: INT64
+    descricao: Ano
+    particao: true
+
+  - nome: mes
+    tipo: INT64
+    descricao: Mês
+    particao: true
+
+  - nome: ano_competencia_movimentacao
+    tipo: INT64
+    descricao: Ano de competência da movimentação ocorrida fora do prazo.
+
+  - nome: mes_competencia_movimentacao
+    tipo: INT64
+    descricao: Mês de competência da movimentação ocorrida fora do prazo.
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da Unidade da Federação
+    particao: true
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: ID Município - IBGE 7 Dígitos
+
+  - nome: cnae_2_secao
+    tipo: STRING
+    descricao: Classificação Nacional de Atividades Econômicas (CNAE 2.0 - Seção)
+
+  - nome: cnae_2_subclasse
+    tipo: STRING
+    descricao: Subclasse do Código Nacional de Atividades Econômicas 2.0
+
+  - nome: saldo_movimentacao
+    tipo: INT64
+    descricao: Saldo de movimentação
+
+  - nome: cbo_2002
+    tipo: STRING
+    descricao: Classificação Brasileira de Ocupações (CBO) - 2002
+
+  - nome: grau_instrucao
+    tipo: STRING
+    descricao: Grau de instrução ou escolaridade
+
+  - nome: idade
+    tipo: INT64
+    descricao: Idade do trabalhador
+
+  - nome: horas_contratuais
+    tipo: INT64
+    descricao: Horas contratuais
+
+  - nome: raca_cor
+    tipo: STRING
+    descricao: Raça ou Cor do Trabalhador
+
+  - nome: sexo
+    tipo: STRING
+    descricao: Sexo
+
+  - nome: tipo_empregador
+    tipo: STRING
+    descricao: Tipo de empregador
+
+  - nome: tipo_estabelecimento
+    tipo: STRING
+    descricao: Tipo de estabelecimento
+
+  - nome: tipo_movimentacao
+    tipo: STRING
+    descricao: Tipo de movimentação
+
+  - nome: tipo_deficiencia
+    tipo: STRING
+    descricao: Tipo de deficiência/Beneficiário habilitado
+
+  - nome: indicador_trabalho_intermitente
+    tipo: STRING
+    descricao: Indicador de trabalhador intermitente
+
+  - nome: indicador_trabalho_parcial
+    tipo: STRING
+    descricao: Indicador de movimentação referente a contrato parcial
+
+  - nome: salario_mensal
+    tipo: FLOAT64
+    descricao: Salário mensal em moeda corrente
+
+  - nome: tamanho_estabelecimento_janeiro
+    tipo: STRING
+    descricao: Faixa de tamanho do estabelecimento em relação ao total de vínculos no início do ano
+
+  - nome: indicador_aprendiz
+    tipo: STRING
+    descricao: Indicador de trabalhador aprendiz
+
+  - nome: origem_informacao
+    tipo: STRING
+    descricao: Origem da Informação
+
+  - nome: indicador_fora_prazo
+    tipo: STRING
+    descricao: Indicador fora do prazo
+
+  - nome: categoria
+    tipo: STRING
+    descricao: Categoria de trabalhador
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Saldo de admissões e desligamentos em São Paulo em janeiro de 2025.
+    sql: |
+      WITH tabelas_unidas AS (
+        SELECT *, 0 AS indicador_exclusao
+        FROM `basedosdados.br_me_caged.microdados_movimentacao`
+        UNION ALL
+        SELECT * EXCEPT (ano, mes), 0 AS indicador_exclusao
+        FROM `basedosdados.br_me_caged.microdados_movimentacao_fora_prazo`
+        UNION ALL
+        SELECT * EXCEPT (ano, mes, ano_declaracao_movimentacao, mes_declaracao_movimentacao, indicador_exclusao), 1 AS indicador_exclusao
+        FROM `basedosdados.br_me_caged.microdados_movimentacao_excluida`
+      ),
+
+      tabela_ajustada AS (
+        SELECT *,
+          CASE
+            WHEN saldo_movimentacao = 1 THEN 'admissão'
+            WHEN saldo_movimentacao = -1 THEN 'desligamento'
+          END AS admissao_desligamento,
+          CASE
+            WHEN indicador_exclusao = 0 THEN saldo_movimentacao
+            WHEN indicador_exclusao = 1 THEN -saldo_movimentacao
+          END AS saldo_movimentacao_ajustado
+        FROM tabelas_unidas
+      )
+
+      SELECT
+        ano,
+        mes,
+        SUM(IF(admissao_desligamento = 'admissão', saldo_movimentacao_ajustado, 0)) AS qte_admissoes,
+        SUM(IF(admissao_desligamento = 'desligamento', saldo_movimentacao_ajustado, 0)) AS qte_desligamentos,
+        SUM(saldo_movimentacao_ajustado) AS saldo
+      FROM tabela_ajustada
+      WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 1
+      GROUP BY 1, 2
+      ORDER BY ano, mes
