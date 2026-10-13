@@ -1,9 +1,9 @@
-# GABARITO — preencha e troque `status` para `ativo`.
+# Revisado com os metadados oficiais da Base dos Dados (API pública e tabela
+# br_ms_cnes.dicionario), consultados em 13/10/2026. Das 204 colunas da
+# tabela, ficaram as que respondem perguntas de gestão; as demais seguem
+# documentadas no link de `url_documentacao`.
 #
 # O formato completo, campo a campo, está em `catalog/_schema.yaml`.
-# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
-# Dados antes de ativar: eles são o que vai no FROM da consulta.
-#
 # Depois de editar:  make validar-catalogo
 
 # ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
@@ -12,270 +12,240 @@ dataset_id: br_ms_cnes
 table_id: estabelecimento
 nome_exibicao: CNES — Estabelecimentos de saúde
 area: saude
-fonte: Ministério da Saúde
+fonte: Ministério da Saúde (DataSUS)
 url_documentacao: https://basedosdados.org/dataset/354d6d98-bc09-4e22-a58a-e4eac3a5283c?table=72505728-8867-4b6f-8afd-b732de55854e
 status: rascunho
 
 # ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
 #     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
 resumo: >
-  O Cadastro Nacional de Estabelecimentos de Saúde (CNES) é um documento público e 
-  sistema de informação oficial de cadastramento de informações acerca de todos os 
-  estabelecimentos de saúde do país, independentemente de sua natureza jurídica ou 
-  integração com o Sistema Único de Saúde (SUS). Os dados se referem à capacidade 
-  instalada e mão de obra assistencial de saúde no Brasil em estabelecimentos de 
-  saúde públicos ou privados. O CNES é a base cadastral para operacionalização de 
-  diversos sistemas, tais como: Sistema de Informação Ambulatorial (SIA), Sistema de 
-  Informação Hospitalar (SIH), e-SUS Atenção Básica (e-SUS AB), entre outros. 
-  Atualmente, o CNES é a ferramenta auxiliadora para uma gestão eficaz e eficiente, 
-  proporcionando ao gestor o conhecimento da realidade da rede assistencial existente 
-  e suas potencialidades e auxiliando no planejamento em saúde em todas as esferas 
-  administrativas do Governo.
+  Cadastro mensal de todos os estabelecimentos de saúde do Brasil, públicos e
+  privados, mantido pelo Ministério da Saúde no CNES. Cada linha é um
+  estabelecimento em um mês, com município, tipo de unidade (hospital, posto
+  de saúde, UPA, CAPS, clínica), esfera administrativa, vínculo com o SUS,
+  tipos de atendimento e quantidade de leitos e salas. Responde perguntas
+  sobre quantos hospitais, unidades básicas ou UPAs existem, onde ficam,
+  quantos atendem pelo SUS e como a rede e os leitos evoluíram no tempo.
 
-  A tabela ESTABELECIMENTO fornece informações sobre a gestão e operação dos estabelecimentos de saúde brasileiros.
-
-palavras_chave: [saúde, CNES, estabelecimentos de saúde, SUS, serviços de saúde]
+palavras_chave: [hospital, hospitais, posto de saúde, UBS, unidade básica de saúde, UPA, pronto atendimento, CAPS, clínica, leitos, rede de saúde, SUS, estabelecimento de saúde, CNES]
 
 perguntas_exemplo:
-  - "Quantos hospitais públicos existiam no Estado de Pernambuco em 2023?"
-  - "Quantas Unidades de Pronto Atendimento (UPAs) existiam no município de Agrestina/PE em 2023?"
+  - "Quantos hospitais públicos existiam no Estado de Pernambuco em dezembro de 2023?"
+  - "Quantas UPAs existem em cada município de Pernambuco?"
+  - "Como evoluiu o número de leitos clínicos e cirúrgicos em Pernambuco entre 2019 e 2023?"
 
 # ─── CARACTERÍSTICAS ──────────────────────────────────────────────
-grao: Informações gerais dos estabelecimentos de saúde, como localização, tipo de gestão, tipo de unidade, serviços oferecidos, entre outros.
+grao: Uma linha por estabelecimento de saúde em cada mês (o mesmo estabelecimento se repete todo mês).
 cobertura_temporal: { inicio: 2005, fim: 2026 }
-cobertura_geografica: município e estado (UF)
+cobertura_geografica: Brasil, por UF e município do estabelecimento
 # Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
 # aqui precisa existir em `colunas` com `particao: true`.
-particoes: [ano, sigla_uf]
+particoes: [ano]
 sem_particao: false
-volume_aproximado: 73.445.151 linhas
+volume_aproximado: 73,9 milhões de linhas
 observacoes: |
-  Os nomes dos municípios devem ser buscados na API do IBGE, pois a tabela só contém o 
-  código do município (id_municipio).
-  Para acessar a API do IBGE, utilize o GET Disponível, substituindo {UF} pela sigla do 
-  Estado ou do Distrito Federal.
-  Endereço da API - https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+  A TABELA É MENSAL: cada estabelecimento aparece uma vez por mês. Para contar
+  estabelecimentos ou somar leitos, fixe UM mês (ex.: `ano = 2023 AND
+  mes = 12`) — somar o ano inteiro conta cada um até 12 vezes. Para contar,
+  use COUNT(DISTINCT id_estabelecimento_cnes).
 
-  Os nomes dos estabelecimentos devem ser buscados na API do CNES, pois a tabela só 
-  contém o código do estabelecimento (id_estabelecimento_cnes).
-  Para acessar a API do CNES, utilize o GET Disponível, substituindo {codigo_CNES} 
-  pelo código do estabelecimento (id_estabelecimento_cnes).
-  Endereço da API - https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/{codigo_CNES}
+  Público x privado: a partir de 2016 o CNES passou a usar a natureza jurídica.
+  Estabelecimento público = `id_natureza_juridica` começando com '1'
+  (administração pública). `tipo_esfera_administrativa` vale para os anos
+  anteriores e pode vir vazia nos recentes.
+
+  Os quantitativos de leitos são os existentes (SUS e não SUS). O detalhamento
+  por especialidade e a quantidade de leitos SUS estão na tabela
+  `br_ms_cnes.leito`. O nome do estabelecimento não está na tabela.
+
+  Nome do município: una com `basedosdados.br_bd_diretorios_brasil.municipio`
+  pela coluna `id_municipio`.
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
-colunas: [
-  {nome: ano, descricao: Ano, tipo: INT64, particao: true},
-  {nome: mes, descricao: Mês, tipo: INT64},
-  {nome: sigla_uf, descricao: Sigla da Unidade da Federação, tipo: STRING, particao: true},
-  {nome: ano_atualizacao, descricao: Ano de atualização da informação pelo estabelecimento, tipo: INT64},
-  {nome: mes_atualizacao, descricao: Mês de atualização da informação pelo estabelecimento, tipo: INT64},
-  {nome: id_municipio, descricao: ID Município - IBGE 7 Dígitos, tipo: STRING},
-  {nome: id_municipio_6, descricao: ID Município - IBGE 6 Dígitos, tipo: STRING},
-  {nome: id_regiao_saude, descricao: ID da região de saúde NOAS, tipo: STRING},
-  {nome: id_microrregiao_saude, descricao: ID da microrregião de saúde NOAS, tipo: STRING},
-  {nome: id_distrito_sanitario, descricao: ID do módulo assistencial, tipo: STRING},
-  {nome: id_distrito_administrativo, descricao: ID do distrito administrativo, tipo: STRING},
-  {nome: cep, descricao: Código do CEP, tipo: STRING},
-  {nome: id_estabelecimento_cnes, descricao: ID estabelecimento - CNES, tipo: STRING},
-  {nome: tipo_pessoa, descricao: Indicador de pessoa física ou jurídica, tipo: STRING},
-  {nome: cpf_cnpj, descricao: CPF (caso pessoa física) ou CNPJ (caso pessoa jurídica), tipo: STRING},
-  {nome: tipo_grau_dependencia, descricao: ID do grau de dependência, tipo: STRING},
-  {nome: cnpj_mantenedora, descricao: CNPJ da mantenedora, tipo: STRING},
-  {nome: tipo_retencao_tributos_mantenedora, descricao: Identificação do tipo de retenção de tributos da mantenedora, tipo: STRING},
-  {nome: indicador_vinculo_sus, descricao: Indica se tem vínculo com o SUS, tipo: INT64},
-  {nome: tipo_gestao, descricao: Tipo de gestão, tipo: STRING},
-  {nome: tipo_esfera_administrativa, descricao: Esfera administrativa, tipo: STRING},
-  {nome: tipo_retencao_tributos, descricao: Retenção de tributos, tipo: STRING},
-  {nome: tipo_atividade_ensino_pesquisa, descricao: Atividade de ensino/pesquisa, tipo: STRING},
-  {nome: tipo_natureza_administrativa, descricao: Natureza da organização, tipo: STRING},
-  {nome: id_natureza_juridica, descricao: Natureza jurídica, tipo: STRING},
-  {nome: tipo_fluxo_atendimento, descricao: Fluxo da clientela, tipo: STRING},
-  {nome: tipo_unidade, descricao: Tipo de unidade, tipo: STRING},
-  {nome: tipo_turno, descricao: Turno de atendimento, tipo: STRING},
-  {nome: tipo_nivel_hierarquia, descricao: Nível de hierarquia, tipo: STRING},
-  {nome: tipo_prestador, descricao: Tipo de prestador, tipo: STRING},
-  {nome: banco, descricao: Código do banco, tipo: STRING},
-  {nome: agencia, descricao: Código da agência, tipo: STRING},
-  {nome: conta_corrente, descricao: Código da conta corrente, tipo: STRING},
-  {nome: id_contrato_municipio_sus, descricao: Número do contrato/convênio municipal do vínculo com o SUS, tipo: STRING},
-  {nome: data_publicacao_contrato_municipal, descricao: Data de publicação do contrato ou convênio municipal, tipo: DATE},
-  {nome: data_publicacao_contrato_estadual, descricao: Data de publicação do contrato ou convênio estadual, tipo: DATE},
-  {nome: id_contrato_estado_sus, descricao: Número do contrato/convênio estadual do vínculo com o SUS, tipo: STRING},
-  {nome: numero_alvara, descricao: Número do alvará, tipo: STRING},
-  {nome: data_expedicao_alvara, descricao: Data da expedição do alvará, tipo: DATE},
-  {nome: tipo_orgao_expedidor, descricao: Código do órgão expedidor do alvará, tipo: STRING},
-  {nome: tipo_avaliacao_acreditacao_hospitalar, descricao: Indica se o estabelecimento foi avaliado segundo o manual de acreditação hospitalar do Ministério da Saúde, tipo: STRING},
-  {nome: tipo_classificacao_acreditacao_hospitalar, descricao: Classificação da avaliação segundo o manual de acreditação hospitalar do Ministério da Saúde, tipo: STRING},
-  {nome: ano_avaliacao_pnass, descricao: Ano da avaliação PNASS, tipo: INT64},
-  {nome: mes_avaliacao_pnass, descricao: Mês da avaliação PNASS, tipo: INT64},
-  {nome: indicador_atencao_ambulatorial, descricao: Indica a existência de atenção ambulatorial, tipo: INT64},
-  {nome: indicador_gestao_basica_ambulatorial_estadual, descricao: Indicador se a gestão da atividade atenção básica ambulatorial é estadual, tipo: INT64},
-  {nome: indicador_gestao_basica_ambulatorial_municipal, descricao: Indicador se a gestão da atividade atenção básica ambulatorial é municipal, tipo: INT64},
-  {nome: indicador_gestao_media_ambulatorial_estadual, descricao: Indicador se a gestão da atividade média complexidade ambulatorial é estadual, tipo: INT64},
-  {nome: indicador_gestao_media_ambulatorial_municipal, descricao: Indicador se a gestão da atividade média complexidade ambulatorial é municipal, tipo: INT64},
-  {nome: indicador_gestao_alta_ambulatorial_estadual, descricao: Indicador se a gestão da atividade alta complexidade ambulatorial é estadual, tipo: INT64},
-  {nome: indicador_gestao_alta_ambulatorial_municipal, descricao: Indicador se a gestão da atividade alta complexidade ambulatorial é municipal, tipo: INT64},
-  {nome: indicador_atencao_hospitalar, descricao: Indica a existência de atenção hospitalar, tipo: INT64},
-  {nome: indicador_gestao_media_hospitalar_estadual, descricao: Indicador se a gestão da atividade média complexidade hospitalar é estadual, tipo: INT64},
-  {nome: indicador_gestao_media_hospitalar_municipal, descricao: Indicador se a gestão da atividade média complexidade hospitalar é municipal, tipo: INT64},
-  {nome: indicador_gestao_alta_hospitalar_estadual, descricao: Indicador se a gestão da atividade alta complexidade hospitalar é estadual, tipo: INT64},
-  {nome: indicador_gestao_alta_hospitalar_municipal, descricao: Indicador se a gestão da atividade alta complexidade hospitalar é municipal, tipo: INT64},
-  {nome: indicador_gestao_hospitalar_estadual, descricao: Indicador se a gestão do programa cód. 03 é estadual (Antigo), tipo: INT64},
-  {nome: indicador_gestao_hospitalar_municipal, descricao: Indicador se a gestão do programa cód. 03 é municipal (Antigo), tipo: INT64},
-  {nome: indicador_leito_hospitalar, descricao: Indica a existência de leitos hospitalares, tipo: INT64},
-  {nome: quantidade_leito_cirurgico, descricao: Quantidade de leitos hospitalares cirúrgicos, tipo: INT64},
-  {nome: quantidade_leito_clinico, descricao: Quantidade de leitos hospitalares clínicos, tipo: INT64},
-  {nome: quantidade_leito_complementar, descricao: Quantidade de leitos hospitalares complementares, tipo: INT64},
-  {nome: quantidade_leito_repouso_pediatrico_urgencia, descricao: Quantidade de leitos de repouso/observação pediátrico (urgência/emergência), tipo: INT64},
-  {nome: quantidade_leito_repouso_feminino_urgencia, descricao: Quantidade de leitos de repouso/observação feminino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_leito_repouso_masculino_urgencia, descricao: Quantidade de leitos de repouso/observação masculino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_leito_repouso_indiferenciado_urgencia, descricao: Quantidade de leitos de repouso/observação indiferenciado (urgência/emergência), tipo: INT64},
-  {nome: indicador_instalacao_urgencia, descricao: Indica a existência de instalação física de atendimento de urgência/emergência, tipo: INT64},
-  {nome: quantidade_consultorio_pediatrico_urgencia, descricao: Quantidade de salas/consultórios de atendimento pediátrico (urgência/emergência), tipo: INT64},
-  {nome: quantidade_consultorio_feminino_urgencia, descricao: Quantidade de salas/consultórios de atendimento feminino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_consultorio_masculino_urgencia, descricao: Quantidade de salas/consultórios de atendimento masculino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_consultorio_indiferenciado_urgencia, descricao: Quantidade de salas/consultórios de atendimento indiferenciado (urgência/emergência), tipo: INT64},
-  {nome: quantidade_consultorio_odontologia_urgencia, descricao: Quantidade de consultórios de odontologia (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_repouso_pediatrico_urgencia, descricao: Quantidade de salas de repouso/observação pediátrico (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_repouso_feminino_urgencia, descricao: Quantidade de salas de repouso/observação feminino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_repouso_masculino_urgencia, descricao: Quantidade de salas de repouso/observação masculino (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_repouso_indiferenciado_urgencia, descricao: Quantidade de salas de repouso/observação indiferenciado (urgência/emergência), tipo: INT64},
-  {nome: quantidade_equipos_odontologia_urgencia, descricao: Quantidade de equipos de odontologia (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_higienizacao_urgencia, descricao: Quantidade de salas de higienização (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_gesso_urgencia, descricao: Quantidade de salas de gesso (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_curativo_urgencia, descricao: Quantidade de salas de curativos (urgência/emergência), tipo: INT64},
-  {nome: quantidade_sala_pequena_cirurgia_urgencia, descricao: Quantidade de salas de pequenas cirurgias (urgência/emergência), tipo: INT64},
-  {nome: quantidade_consultorio_medico_urgencia, descricao: Quantidade de consultórios médicos (urgência/emergência), tipo: INT64},
-  {nome: indicador_instalacao_ambulatorial, descricao: Indica a existência de instalação física de atendimento ambulatorial, tipo: INT64},
-  {nome: quantidade_consultorio_clinica_basica_ambulatorial, descricao: Quantidade de consultórios de clínica básica (ambulatorial), tipo: INT64},
-  {nome: quantidade_consultorio_clinica_especializada_ambulatorial, descricao: Quantidade de consultórios de clínica especializada (ambulatorial), tipo: INT64},
-  {nome: quantidade_consultorio_clinica_indiferenciada_ambulatorial, descricao: Quantidade de consultórios de clínica indiferenciada (ambulatorial), tipo: INT64},
-  {nome: quantidade_consultorio_nao_medico_ambulatorial, descricao: Quantidade de consultórios não médicos (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_repouso_feminino_ambulatorial, descricao: Quantidade de salas de repouso/observação feminino (ambulatorial), tipo: INT64},
-  {nome: quantidade_leito_repouso_feminino_ambulatorial, descricao: Quantidade de leitos de repouso/observação feminino (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_repouso_masculino_ambulatorial, descricao: Quantidade de salas de repouso/observação masculino (ambulatorial), tipo: INT64},
-  {nome: quantidade_leito_repouso_masculino_ambulatorial, descricao: Quantidade de leitos de repouso/observação masculino (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_repouso_pediatrico_ambulatorial, descricao: Quantidade de salas de repouso/observação pediátrico (ambulatorial), tipo: INT64},
-  {nome: quantidade_leito_repouso_pediatrico_ambulatorial, descricao: Quantidade de leitos de repouso/observação pediátrico (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_repouso_indiferenciado_ambulatorial, descricao: Quantidade de salas de repouso/observação indiferenciado (ambulatorial), tipo: INT64},
-  {nome: quantidade_leito_repouso_indiferenciado_ambulatorial, descricao: Quantidade de leitos de repouso/observação indiferenciado (ambulatorial), tipo: INT64},
-  {nome: quantidade_consultorio_odontologia_ambulatorial, descricao: Quantidade de consultórios de odontologia (ambulatorial), tipo: INT64},
-  {nome: quantidade_equipos_odontologia_ambulatorial, descricao: Quantidade de equipos de odontologia (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_pequena_cirurgia_ambulatorial, descricao: Quantidade de salas de pequenas cirurgias (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_enfermagem_ambulatorial, descricao: Quantidade de salas de enfermagem (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_imunizacao_ambulatorial, descricao: Quantidade de salas de imunização (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_nebulizacao_ambulatorial, descricao: Quantidade de salas de nebulização (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_gesso_ambulatorial, descricao: Quantidade de salas de gesso (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_curativo_ambulatorial, descricao: Quantidade de salas de curativos (ambulatorial), tipo: INT64},
-  {nome: quantidade_sala_cirurgia_ambulatorial, descricao: Quantidade de salas de cirurgia ambulatorial (ambulatorial), tipo: INT64},
-  {nome: indicador_instalacao_hospitalar, descricao: Indica a existência de instalação física de atendimento hospitalar, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_centro_cirurgico, descricao: Indica a existência de instalação física de atendimento hospitalar - centro cirúrgico, tipo: INT64},
-  {nome: quantidade_sala_cirurgia_centro_cirurgico, descricao: Quantidade de salas de cirurgias em centro cirúrgico, tipo: INT64},
-  {nome: quantidade_sala_recuperacao_centro_cirurgico, descricao: Quantidade de salas de recuperação em centro cirúrgico, tipo: INT64},
-  {nome: quantidade_leito_recuperacao_centro_cirurgico, descricao: Quantidade de leitos de recuperação em centro cirúrgico, tipo: INT64},
-  {nome: quantidade_sala_cirurgia_ambulatorial_centro_cirurgico, descricao: Quantidade de salas de cirurgia ambulatorial em centro cirúrgico, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_centro_obstetrico, descricao: Indica a existência de instalação física de atendimento hospitalar - centro obstétrico, tipo: INT64},
-  {nome: quantidade_sala_pre_parto_centro_obstetrico, descricao: Quantidade de salas de pré-parto em centro obstétrico, tipo: INT64},
-  {nome: quantidade_leito_pre_parto_centro_obstetrico, descricao: Quantidade de leitos de pré-parto em centro obstétrico, tipo: INT64},
-  {nome: quantidade_sala_parto_normal_centro_obstetrico, descricao: Quantidade de salas de parto normal em centro obstétrico, tipo: INT64},
-  {nome: quantidade_sala_curetagem_centro_obstetrico, descricao: Quantidade de salas de curetagem em centro obstétrico, tipo: INT64},
-  {nome: quantidade_sala_cirurgia_centro_obstetrico, descricao: Quantidade de salas de cirurgias em centro obstétrico, tipo: INT64},
-  {nome: indicador_instalacao_hospitalar_neonatal, descricao: Indica a existência de instalação física de atendimento hospitalar - unidade neonatal, tipo: INT64},
-  {nome: quantidade_leito_recem_nascido_normal_neonatal, descricao: Quantidade de leitos de recém-nascido normal em unidade neonatal, tipo: INT64},
-  {nome: quantidade_leito_recem_nascido_patologico_neonatal, descricao: Quantidade de leitos de recém-nascido patológico em unidade neonatal, tipo: INT64},
-  {nome: quantidade_leito_conjunto_neonatal, descricao: Quantidade de leitos de alojamento conjunto em unidade neonatal, tipo: INT64},
-  {nome: indicador_servico_apoio, descricao: Indica a existência de algum serviço de apoio, tipo: INT64},
-  {nome: indicador_servico_same_spp_proprio, descricao: Indica a existência de serviço de Arquivo Médico e Estatística ou Serviço de Prontuário de Paciente próprio, tipo: INT64},
-  {nome: indicador_servico_same_spp_terceirizado, descricao: Indica a existência de serviço de Arquivo Médico e Estatística ou Serviço de Prontuário de Paciente terceirizado, tipo: INT64},
-  {nome: indicador_servico_social_proprio, descricao: Indica a existência de serviço de apoio serviço social próprio, tipo: INT64},
-  {nome: indicador_servico_social_terceirizado, descricao: Indica a existência de serviço de apoio serviço social terceirizado, tipo: INT64},
-  {nome: indicador_servico_farmacia_proprio, descricao: Indica a existência de serviço de apoio farmácia próprio, tipo: INT64},
-  {nome: indicador_servico_farmacia_terceirizado, descricao: Indica a existência de serviço de apoio farmácia terceirizado, tipo: INT64},
-  {nome: indicador_servico_esterilizacao_proprio, descricao: Indica a existência de serviço de apoio esterilização de materiais próprio, tipo: INT64},
-  {nome: indicador_servico_esterilizacao_terceirizado, descricao: Indica a existência de serviço de apoio esterilização de materiais terceirizado, tipo: INT64},
-  {nome: indicador_servico_nutricao_proprio, descricao: Indica a existência de serviço de apoio nutrição/dietética próprio, tipo: INT64},
-  {nome: indicador_servico_nutricao_terceirizado, descricao: Indica a existência de serviço de apoio nutrição/dietética terceirizado, tipo: INT64},
-  {nome: indicador_servico_lactario_proprio, descricao: Indica a existência de serviço de apoio lactário próprio, tipo: INT64},
-  {nome: indicador_servico_lactario_terceirizado, descricao: Indica a existência de serviço de apoio lactário terceirizado, tipo: INT64},
-  {nome: indicador_servico_banco_leite_proprio, descricao: Indica a existência de serviço de apoio banco de leite próprio, tipo: INT64},
-  {nome: indicador_servico_banco_leite_terceirizado, descricao: Indica a existência de serviço de apoio banco de leite terceirizado, tipo: INT64},
-  {nome: indicador_servico_lavanderia_proprio, descricao: Indica a existência de serviço de apoio lavanderia próprio, tipo: INT64},
-  {nome: indicador_servico_lavanderia_terceirizado, descricao: Indica a existência de serviço de apoio lavanderia terceirizado, tipo: INT64},
-  {nome: indicador_servico_manutencao_proprio, descricao: Indica a existência de serviço de apoio manutenção de equipamento próprio, tipo: INT64},
-  {nome: indicador_servico_manutencao_terceirizado, descricao: Indica a existência de serviço de apoio manutenção de equipamento terceirizado, tipo: INT64},
-  {nome: indicador_servico_ambulancia_proprio, descricao: Indica a existência de serviço de apoio ambulância próprio, tipo: INT64},
-  {nome: indicador_servico_ambulancia_terceirizado, descricao: Indica a existência de serviço de apoio ambulância terceirizado, tipo: INT64},
-  {nome: indicador_servico_necroterio_proprio, descricao: Indica a existência de serviço de apoio necrotério próprio, tipo: INT64},
-  {nome: indicador_servico_necroterio_terceirizado, descricao: Indica a existência de serviço de apoio necrotério terceirizado, tipo: INT64},
-  {nome: indicador_coleta_residuo, descricao: Indica a existência de alguma coleta de resíduo, tipo: INT64},
-  {nome: indicador_coleta_residuo_biologico, descricao: Indica a existência de coleta de resíduo biológico, tipo: INT64},
-  {nome: indicador_coleta_residuo_quimico, descricao: Indica a existência de coleta de resíduo químico, tipo: INT64},
-  {nome: indicador_coleta_rejeito_radioativo, descricao: Indica a existência de coleta de rejeitos radioativos, tipo: INT64},
-  {nome: indicador_coleta_rejeito_comum, descricao: Indica a existência de coleta de rejeitos comuns, tipo: INT64},
-  {nome: indicador_comissao, descricao: Indica a existência de alguma comissão, tipo: INT64},
-  {nome: indicador_comissao_etica_medica, descricao: Indica a existência de comissão de ética médica, tipo: INT64},
-  {nome: indicador_comissao_etica_enfermagem, descricao: Indica a existência de comissão de ética de enfermagem, tipo: INT64},
-  {nome: indicador_comissao_farmacia_terapeutica, descricao: Indica a existência de comissão de farmácia e terapêutica, tipo: INT64},
-  {nome: indicador_comissao_controle_infeccao, descricao: Indica a existência de comissão de controle de infecção hospitalar, tipo: INT64},
-  {nome: indicador_comissao_apropriacao_custos, descricao: Indica a existência de comissão de apropriação de custos, tipo: INT64},
-  {nome: indicador_comissao_cipa, descricao: Indica a existência de comissão de CIPA, tipo: INT64},
-  {nome: indicador_comissao_revisao_prontuario, descricao: Indica a existência de comissão de revisão de prontuários, tipo: INT64},
-  {nome: indicador_comissao_revisao_documentacao, descricao: Indica a existência de comissão de revisão de documentação médica e estatística, tipo: INT64},
-  {nome: indicador_comissao_analise_obito_biopisias, descricao: Indica a existência de comissão de análise de óbitos e biópsias, tipo: INT64},
-  {nome: indicador_comissao_investigacao_epidemiologica, descricao: Indica a existência de comissão de investigação epidemiológica, tipo: INT64},
-  {nome: indicador_comissao_notificacao_doencas, descricao: Indica a existência de comissão de notificação de doenças, tipo: INT64},
-  {nome: indicador_comissao_zoonose_vetores, descricao: Indica a existência de comissão de controle de zoonoses e vetores, tipo: INT64},
-  {nome: indicador_atendimento_prestado, descricao: Indica a existência de algum atendimento prestado, tipo: INT64},
-  {nome: indicador_atendimento_internacao_sus, descricao: Indica a existência de atendimento prestado internação/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_internacao_particular, descricao: Indica a existência de atendimento prestado internação/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_internacao_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado internação/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_internacao_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado internação/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_internacao_plano_saude_publico, descricao: Indica a existência de atendimento prestado internação/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_internacao_plano_saude_privado, descricao: Indica a existência de atendimento prestado internação/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_sus, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_particular, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_saude_publico, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_ambulatorial_plano_saude_privado, descricao: Indica a existência de atendimento prestado atendimento ambulatorial/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_sadt_sus, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_sadt_privado, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_sadt_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_sadt_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_sadt_plano_saude_publico, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_sadt_plano_saude_privado, descricao: Indica a existência de atendimento prestado Serviço de Apoio Diagnóstico Terapêutico/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_sus, descricao: Indica a existência de atendimento prestado urgência/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_privado, descricao: Indica a existência de atendimento prestado urgência/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado urgência/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado urgência/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_saude_publico, descricao: Indica a existência de atendimento prestado urgência/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_urgencia_plano_saude_privado, descricao: Indica a existência de atendimento prestado urgência/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_outros_sus, descricao: Indica a existência de atendimento prestado outros/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_outros_privado, descricao: Indica a existência de atendimento prestado outros/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_outros_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado outros/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_outros_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado outros/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_outros_plano_saude_publico, descricao: Indica a existência de atendimento prestado outros/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_outros_plano_saude_privado, descricao: Indica a existência de atendimento prestado outros/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_sus, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_privado, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_plano_saude_publico, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_vigilancia_plano_saude_privado, descricao: Indica a existência de atendimento prestado vigilância em saúde/convênio plano de saúde privado, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_sus, descricao: Indica a existência de atendimento prestado regulação/convênio SUS, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_privado, descricao: Indica a existência de atendimento prestado regulação/convênio particular, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_plano_seguro_proprio, descricao: Indica a existência de atendimento prestado regulação/convênio plano-seguro próprio, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_plano_seguro_terceiro, descricao: Indica a existência de atendimento prestado regulação/convênio plano-seguro terceiro, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_plano_saude_publico, descricao: Indica a existência de atendimento prestado regulação/convênio plano de saúde público, tipo: INT64},
-  {nome: indicador_atendimento_regulacao_plano_saude_privado, descricao: Indica a existência de atendimento prestado regulação/convênio plano de saúde privado, tipo: INT64}
-]
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência do cadastro.
+    particao: true
+
+  - nome: mes
+    tipo: INT64
+    descricao: Mês de referência do cadastro (1 a 12).
+    nota: Não é partição, mas filtre sempre um mês para não contar o mesmo estabelecimento várias vezes.
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da Unidade da Federação do estabelecimento.
+    valores_exemplo: [PE, AL, PB, BA, SP]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município do estabelecimento.
+    valores_exemplo: ["2611606", "2604106", "2600302"]
+    nota: Recife = 2611606; Caruaru = 2604106; Agrestina = 2600302.
+
+  - nome: id_estabelecimento_cnes
+    tipo: STRING
+    descricao: Código do estabelecimento no CNES (7 dígitos).
+    nota: Use COUNT(DISTINCT id_estabelecimento_cnes) para contar estabelecimentos.
+
+  - nome: id_regiao_saude
+    tipo: STRING
+    descricao: Código da região de saúde do estabelecimento.
+
+  - nome: tipo_unidade
+    tipo: STRING
+    descricao: Tipo de unidade de saúde.
+    valores_exemplo: ["1", "2", "5", "7", "70", "73"]
+    nota: >-
+      1 = Posto de saúde; 2 = Centro de saúde/Unidade Básica (UBS); 4 = Policlínica;
+      5 = Hospital geral; 7 = Hospital especializado; 15 = Unidade mista;
+      20 = Pronto-socorro geral; 21 = Pronto-socorro especializado; 22 = Consultório isolado;
+      36 = Clínica/ambulatório especializado; 39 = Apoio de diagnose e terapia;
+      43 = Farmácia; 62 = Hospital-dia isolado; 68 = Secretaria de saúde;
+      70 = CAPS (atenção psicossocial); 73 = Pronto atendimento (UPA);
+      74 = Polo Academia da Saúde. Hospitais = 5, 7, 15 e 62.
+
+  - nome: id_natureza_juridica
+    tipo: STRING
+    descricao: Natureza jurídica do estabelecimento (código de 4 dígitos da Receita Federal).
+    valores_exemplo: ["1244", "1023", "2062", "3999"]
+    nota: Começa com 1 = Administração pública; 2 = Entidade empresarial; 3 = Sem fins lucrativos; 4 = Pessoa física.
+
+  - nome: tipo_esfera_administrativa
+    tipo: STRING
+    descricao: Esfera administrativa do estabelecimento (usada até 2015).
+    valores_exemplo: ["1", "2", "3", "4"]
+    nota: 1 = Federal; 2 = Estadual; 3 = Municipal; 4 = Privada; 99 = Não informada.
+
+  - nome: tipo_gestao
+    tipo: STRING
+    descricao: Gestor responsável pelo estabelecimento no SUS.
+    valores_exemplo: [M, E, D, S]
+    nota: M = Municipal; E = Estadual; D = Dupla; S = Sem gestão; Z = Não informado.
+
+  - nome: tipo_prestador
+    tipo: STRING
+    descricao: Tipo de prestador de serviço.
+    valores_exemplo: ["20", "40", "50", "60", "61"]
+    nota: >-
+      20 = Privado com fins lucrativos; 22 = Privado optante pelo Simples;
+      30 = Público federal; 40 = Público estadual; 50 = Público municipal;
+      60 = Privado sem fins lucrativos; 61 = Filantrópico com CNAS válido; 80 = Sindicato.
+
+  - nome: indicador_vinculo_sus
+    tipo: INT64
+    descricao: Indica se o estabelecimento tem vínculo com o SUS.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
+
+  - nome: indicador_atendimento_internacao_sus
+    tipo: INT64
+    descricao: Indica se o estabelecimento oferece internação pelo SUS.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
+
+  - nome: indicador_atendimento_ambulatorial_sus
+    tipo: INT64
+    descricao: Indica se o estabelecimento oferece atendimento ambulatorial pelo SUS.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
+
+  - nome: indicador_atendimento_urgencia_sus
+    tipo: INT64
+    descricao: Indica se o estabelecimento oferece urgência e emergência pelo SUS.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
+
+  - nome: indicador_leito_hospitalar
+    tipo: INT64
+    descricao: Indica se o estabelecimento tem leitos hospitalares.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
+
+  - nome: quantidade_leito_clinico
+    tipo: INT64
+    descricao: Quantidade de leitos hospitalares clínicos existentes.
+
+  - nome: quantidade_leito_cirurgico
+    tipo: INT64
+    descricao: Quantidade de leitos hospitalares cirúrgicos existentes.
+
+  - nome: quantidade_leito_complementar
+    tipo: INT64
+    descricao: Quantidade de leitos complementares existentes (UTI e unidades intermediárias).
+
+  - nome: quantidade_sala_cirurgia_centro_cirurgico
+    tipo: INT64
+    descricao: Quantidade de salas de cirurgia em centro cirúrgico.
+
+  - nome: quantidade_sala_parto_normal_centro_obstetrico
+    tipo: INT64
+    descricao: Quantidade de salas de parto normal em centro obstétrico.
+
+  - nome: quantidade_consultorio_medico_urgencia
+    tipo: INT64
+    descricao: Quantidade de consultórios médicos de urgência e emergência.
+
+  - nome: tipo_turno
+    tipo: STRING
+    descricao: Turno de funcionamento do estabelecimento.
+    valores_exemplo: ["2", "3", "6"]
+    nota: >-
+      1 = Turnos intermitentes; 2 = Contínuo 24 horas; 3 = Manhã, tarde e noite;
+      4 = Só manhã; 5 = Só tarde; 6 = Manhã e tarde; 7 = Só noite; 99 = Não informado.
+
+  - nome: tipo_nivel_hierarquia
+    tipo: STRING
+    descricao: Nível de complexidade da atenção oferecida.
+    valores_exemplo: ["1", "2", "4", "8"]
+    nota: >-
+      1 = Atenção básica (PAB); 2 = Média complexidade M1; 3 e 6 = Média M2 e M3;
+      4 = Alta complexidade ambulatorial; 5 = Baixa M1 e M2; 7 = Média M3;
+      8 = Alta complexidade hospitalar e ambulatorial; 99 = Não informado.
+
+  - nome: tipo_atividade_ensino_pesquisa
+    tipo: STRING
+    descricao: Atividade de ensino e pesquisa do estabelecimento.
+    valores_exemplo: ["1", "4", "5"]
+    nota: 1 = Unidade universitária; 2 = Escola superior isolada; 3 = Unidade auxiliar de ensino; 4 = Sem atividade de ensino; 5 = Hospital de ensino.
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
 consultas_exemplo:
-  - pergunta: Quantos hospitais existiam no Estado de Pernambuco?
+  - pergunta: Quantos hospitais públicos existiam no Estado de Pernambuco em dezembro de 2023?
     sql: |
-      SELECT COUNT(DISTINCT id_estabelecimento_cnes)
+      SELECT COUNT(DISTINCT id_estabelecimento_cnes) AS hospitais_publicos
       FROM `basedosdados.br_ms_cnes.estabelecimento`
-      WHERE
-        sigla_uf = 'PE'
-        AND tipo_unidade IN ('5', '7', '62') # tipos que são hospitais (https://apidadosabertos.saude.gov.br/cnes/tipounidades)
+      WHERE ano = 2023
+        AND mes = 12
+        AND sigla_uf = 'PE'
+        AND tipo_unidade IN ('5', '7', '15', '62')
+        AND SUBSTR(id_natureza_juridica, 1, 1) = '1'
+
+  - pergunta: Quantas UPAs existiam em cada município de Pernambuco em dezembro de 2023?
+    sql: |
+      SELECT
+        mun.nome AS municipio,
+        COUNT(DISTINCT cnes.id_estabelecimento_cnes) AS upas
+      FROM `basedosdados.br_ms_cnes.estabelecimento` AS cnes
+      LEFT JOIN `basedosdados.br_bd_diretorios_brasil.municipio` AS mun
+        ON cnes.id_municipio = mun.id_municipio
+      WHERE cnes.ano = 2023
+        AND cnes.mes = 12
+        AND cnes.sigla_uf = 'PE'
+        AND cnes.tipo_unidade = '73'
+      GROUP BY municipio
+      ORDER BY upas DESC
+
+  - pergunta: Como evoluiu o número de leitos clínicos e cirúrgicos em Pernambuco entre 2019 e 2023?
+    sql: |
+      SELECT
+        ano,
+        SUM(quantidade_leito_clinico) AS leitos_clinicos,
+        SUM(quantidade_leito_cirurgico) AS leitos_cirurgicos
+      FROM `basedosdados.br_ms_cnes.estabelecimento`
+      WHERE ano BETWEEN 2019 AND 2023
+        AND mes = 12
+        AND sigla_uf = 'PE'
+      GROUP BY ano
+      ORDER BY ano

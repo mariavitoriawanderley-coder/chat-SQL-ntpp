@@ -1,9 +1,10 @@
-# GABARITO — preencha e troque `status` para `ativo`.
+# Revisado com os metadados oficiais da Base dos Dados (API pública e tabela
+# br_inep_censo_escolar.dicionario), consultados em 13/10/2026. Das 455
+# colunas da tabela, ficaram as de identificação, infraestrutura e totais de
+# matrículas, docentes e turmas; as demais seguem documentadas no link de
+# `url_documentacao`.
 #
 # O formato completo, campo a campo, está em `catalog/_schema.yaml`.
-# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
-# Dados antes de ativar: eles são o que vai no FROM da consulta.
-#
 # Depois de editar:  make validar-catalogo
 
 # ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
@@ -19,1894 +20,285 @@ status: rascunho
 # ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
 #     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
 resumo: >
-  O Censo Escolar é o principal instrumento de coleta de informações da educação básica e a 
-  mais importante pesquisa estatística educacional brasileira. 
-  É coordenado pelo Inep e realizado em regime de colaboração entre as secretarias estaduais e 
-  municipais de educação
-  e com a participação de todas as escolas públicas e privadas do país.
-  A tabela ESCOLA contém dados do Censo Escolar ao nível de cada escola. Os dados são 
-  organizados em mais de 400 variáveis que traçam um perfil completo da escola, caracterizando 
-  desde a infraestrutura física disponível, a equipe pedagógica, a infraestrutura pedagógica, 
-  marcas do período letivo como seu começo e fim, além de várias informações sobre os 
-  estudantes da escola. É a única tabela do Censo Escolar liberada pelo Inep a partir de 2021.
-  
+  Cadastro anual de todas as escolas de educação básica do Brasil, públicas e
+  privadas, coletado pelo INEP no Censo Escolar. Cada linha é uma escola em
+  um ano, com rede (municipal, estadual, federal, privada), localização urbana
+  ou rural, infraestrutura (água, esgoto, internet, biblioteca, laboratórios,
+  quadra, acessibilidade) e totais de matrículas por etapa, docentes e
+  turmas. Responde perguntas sobre quantas escolas existem, suas condições de
+  infraestrutura e o número de alunos por etapa e município.
 
-
-palavras_chave: [educação, matrículas, turmas, escola, censo escolar, INEP]
+palavras_chave: [escola, escolas, censo escolar, INEP, matrículas, alunos, creche, pré-escola, ensino fundamental, ensino médio, EJA, tempo integral, infraestrutura escolar, internet, biblioteca, rede municipal, rede estadual]
 
 perguntas_exemplo:
-  - "Quantas matrículas em creches integrais existiam por município do Estado de Pernambuco em 2024?"
-  - "Quantas escolas não tinham turmas integrais nos anos finais do ensino fundamental no município de Cabo de Santo Agostinho/PE em 2024?"
+  - "Quantas escolas municipais em atividade existem em cada município de Pernambuco?"
+  - "Quantas matrículas em creche em tempo integral havia em cada município de Pernambuco em 2024?"
+  - "Quantas escolas públicas de Pernambuco não têm internet para os alunos?"
 
 # ─── CARACTERÍSTICAS ──────────────────────────────────────────────
-grao: informações da turma em determinado ano, contendo a escola (pública ou privada), com características detalhadas da turma, incluindo o número de matrículas para aquela turma.
-cobertura_temporal: { inicio: 2009, fim: 2024 }
-cobertura_geografica: Estado (UF) e município
+grao: Uma linha por escola em cada ano do Censo Escolar.
+cobertura_temporal: { inicio: 2007, fim: 2025 }
+cobertura_geografica: Brasil, por UF e município da escola
 # Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
 # aqui precisa existir em `colunas` com `particao: true`.
-particoes: [ano]
+particoes: [ano, sigla_uf]
 sem_particao: false
-volume_aproximado: 39.096.570 linhas
+volume_aproximado: 4,3 milhões de linhas
 observacoes: |
-  Para obter dados detalhados da escola, é preciso fazer um JOIN com a tabela escolas.
-  A localização pode ser urbana ou rural.
-  A Base dos Dados não tem acesso ao nome da escola. Não se preocupe em buscar essa informação.
-  Para acessar a API do IBGE, utilize o GET Disponível, substituindo {UF} pela sigla do 
-  Estado ou do Distrito Federal.
-  Endereço da API - https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+  Para contar escolas que funcionam de fato, filtre
+  `tipo_situacao_funcionamento = '1'` (em atividade); a tabela também traz
+  escolas paralisadas e extintas.
 
+  As colunas de infraestrutura (agua_potavel, internet, biblioteca etc.) são
+  indicadores: 1 = possui; 0 = não possui. As de quantidade somam direto.
+
+  "Escola pública" = rede IN ('1', '2', '3'). A tabela não tem o nome da
+  escola. Para dados por turma (duração, disciplinas), use
+  `br_inep_censo_escolar.turma`, ligando pela coluna `id_escola`.
+
+  Nome do município: una com `basedosdados.br_bd_diretorios_brasil.municipio`
+  pela coluna `id_municipio`.
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
 colunas:
-
   - nome: ano
     tipo: INT64
-    descricao: Ano
+    descricao: Ano do Censo Escolar.
     particao: true
 
   - nome: sigla_uf
     tipo: STRING
-    descricao: Sigla da Unidade da Federação
+    descricao: Sigla da Unidade da Federação da escola.
+    particao: true
+    valores_exemplo: [PE, AL, PB, BA, SP]
 
   - nome: id_municipio
     tipo: STRING
-    descricao: ID Município - IBGE 7 Dígitos
+    descricao: Código IBGE de 7 dígitos do município da escola.
+    valores_exemplo: ["2611606", "2604106", "2604007"]
+    nota: Recife = 2611606; Caruaru = 2604106; Carpina = 2604007.
 
   - nome: id_escola
     tipo: STRING
-    descricao: ID Escola - Inep
+    descricao: Código da escola no INEP (8 dígitos).
+    nota: Use COUNT(DISTINCT id_escola) para contar escolas.
 
   - nome: rede
     tipo: STRING
-    descricao: Rede Escolar
-
-  - nome: tipo_categoria_escola_privada
-    tipo: STRING
-    descricao: Categoria da escola privada
-
-  - nome: tipo_localizacao
-    tipo: STRING
-    descricao: Localização
-
-  - nome: tipo_localizacao_diferenciada
-    tipo: STRING
-    descricao: Localização diferenciada da escola
+    descricao: Rede (dependência administrativa) da escola.
+    valores_exemplo: ["1", "2", "3", "4"]
+    nota: 1 = Federal; 2 = Estadual; 3 = Municipal; 4 = Privada. Pública = 1, 2 e 3.
 
   - nome: tipo_situacao_funcionamento
     tipo: STRING
-    descricao: Situação de funcionamento da escola
+    descricao: Situação de funcionamento da escola no ano.
+    valores_exemplo: ["1", "2", "3", "4"]
+    nota: 1 = Em atividade; 2 = Paralisada; 3 = Extinta no ano do Censo; 4 = Extinta em anos anteriores.
 
-  - nome: id_orgao_regional
+  - nome: tipo_localizacao
     tipo: STRING
-    descricao: Código do Órgão Regional
+    descricao: Localização da escola.
+    valores_exemplo: ["1", "2"]
+    nota: 1 = Urbana; 2 = Rural.
 
-  - nome: data_ano_letivo_inicio
-    tipo: DATE
-    descricao: Data do início do ano letivo da escola
-
-  - nome: data_ano_letivo_termino
-    tipo: DATE
-    descricao: Data do fim do ano letivo da escola
-
-  - nome: vinculo_secretaria_educacao
-    tipo: INT64
-    descricao: A escola pública está vinculada à Secretaria de Educação/Ministério da Educação
-
-  - nome: vinculo_seguranca_publica
-    tipo: INT64
-    descricao: A escola pública está vinculada à Secretaria de Segurança Pública/Forças Armadas/Militar
-
-  - nome: vinculo_secretaria_saude
-    tipo: INT64
-    descricao: A escola pública está vinculada à Secretaria de Saúde/Ministério da Saúde
-
-  - nome: vinculo_outro_orgao
-    tipo: INT64
-    descricao: A escola pública está vinculada a outro órgão da administração pública
-
-  - nome: poder_publico_parceria
-    tipo: INT64
-    descricao: Parceria ou convênio com o poder público (parceria ou convênio firmado entre a Administração Pública e instituições privadas ou instituições públicas de ensino, autarquias e fundações da administração indireta para financiamento do atendimento educacional ou para a oferta do itinerário de formação técnica e profissional do ensino médio)
-
-  - nome: tipo_poder_publico_parceria
+  - nome: tipo_localizacao_diferenciada
     tipo: STRING
-    descricao: Poder público responsável pela parceria ou convênio entre a Administração Pública e outras instituições
-
-  - nome: conveniada_poder_publico
-    tipo: INT64
-    descricao: A escola é conveniada com o poder público
-
-  - nome: tipo_convenio_poder_publico
-    tipo: STRING
-    descricao: Tipo de convênio com o poder público
-
-  - nome: forma_contratacao_termo_colaboracao
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Termo de colaboração (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_termo_fomento
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Termo de fomento (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_acordo_cooperacao
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Acordo de cooperação (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_prestacao_servico
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Contrato de prestação de serviço
-
-  - nome: forma_contratacao_cooperacao_tecnica_financeira
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Termo de cooperação técnica e financeira
-
-  - nome: forma_contratacao_consorcio_publico
-    tipo: INT64
-    descricao: Forma de contratação entre a Administração Pública e outras instituições - Contrato de consórcio público/Convênio de cooperação
-
-  - nome: forma_contratacao_parceria_municipal_termo_colaboracao
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Termo de colaboração (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_municipal_termo_fomento
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Termo de fomento (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_municipal_acordo_cooperacao
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Acordo de cooperação (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_municipal_prestacao_servico
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Contrato de prestação de serviço
-
-  - nome: forma_contratacao_parceria_municipal_cooperacao_tecnica_financeira
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Termo de cooperação técnica e financeira
-
-  - nome: forma_contratacao_parceria_municipal_consorcio_publico
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria municipal de educação - Contrato de consórcio público/Convênio de cooperação
-
-  - nome: forma_contratacao_parceria_estadual_termo_colaboracao
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Termo de colaboração (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_estadual_termo_fomento
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Termo de fomento (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_estadual_acordo_cooperacao
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Acordo de cooperação (Lei nº 13.019/2014)
-
-  - nome: forma_contratacao_parceria_estadual_prestacao_servico
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Contrato de prestação de serviço
-
-  - nome: forma_contratacao_parceria_estadual_cooperacao_tecnica_financeira
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Termo de cooperação técnica e financeira
-
-  - nome: forma_contratacao_parceria_estadual_consorcio_publico
-    tipo: INT64
-    descricao: Forma(s) de contratação da parceria ou convênio entre a escola e a Secretaria estadual de educação - Contrato de consórcio público/Convênio de cooperação
-
-  - nome: tipo_atendimento_escolarizacao
-    tipo: INT64
-    descricao: Tipo de atendimento ofertado por meio da parceria ou convênio - Escolarização
-
-  - nome: tipo_atendimento_atividade_complementar
-    tipo: INT64
-    descricao: Tipo de atendimento ofertado por meio da parceria ou convênio - Atividade Complementar
-
-  - nome: tipo_atendimento_aee
-    tipo: INT64
-    descricao: Tipo de atendimento ofertado por meio da parceria ou convênio - Atendimento Educacional Especializado (AEE)
-
-  - nome: mantenedora_escola_privada_empresa
-    tipo: INT64
-    descricao: A mantenedora da escola privada é uma empresa ou grupo empresarial
-
-  - nome: mantenedora_escola_privada_ong
-    tipo: INT64
-    descricao: A mantenedora da escola privada é uma ONG
-
-  - nome: mantenedora_escola_privada_oscip
-    tipo: INT64
-    descricao: A mantenedora da escola privada é uma Organização da Sociedade Civil de Interesse Público (Oscip)
-
-  - nome: mantenedora_escola_privada_ong_oscip
-    tipo: INT64
-    descricao: A mantenedora da escola privada é uma Organização da Sociedade Civil de Interesse Público (Oscip) ou uma ONG
-
-  - nome: mantenedora_escola_privada_sindicato
-    tipo: INT64
-    descricao: A mantenedora da escola privada é um sindicato ou associação cooperativa
-
-  - nome: mantenedora_escola_privada_sistema_s
-    tipo: INT64
-    descricao: A mantenedora da escola privada é o sistema S (SENAI, SESI, SESC, entre outros)
-
-  - nome: mantenedora_escola_privada_sem_fins
-    tipo: INT64
-    descricao: A mantenedora da escola privada é uma entidade sem fins lucrativos
-
-  - nome: cnpj_escola_privada
-    tipo: STRING
-    descricao: Número do CNPJ da escola privada
-
-  - nome: cnpj_mantenedora
-    tipo: STRING
-    descricao: Número do CNPJ da mantenedora principal da escola privada
-
-  - nome: tipo_regulamentacao
-    tipo: STRING
-    descricao: A escola tem regulamentação/autorização no conselho ou órgão municipal, estadual ou federal de educação
-
-  - nome: tipo_responsavel_regulamentacao
-    tipo: STRING
-    descricao: Esfera administrativa do conselho ou órgão responsável pela Regulamentação/Autorização da escola
-
-  - nome: id_escola_sede
-    tipo: STRING
-    descricao: Código da escola sede
-
-  - nome: id_ies_ofertante
-    tipo: STRING
-    descricao: Código da Instituição de Ensino Superior (IES) vinculada à escola
-
-  - nome: local_funcionamento_predio_escolar
-    tipo: INT64
-    descricao: O local de funcionamento da escola é um prédio escolar
-
-  - nome: tipo_local_funcionamento_predio_escolar
-    tipo: STRING
-    descricao: A forma de ocupação do Prédio escolar, e.g., próprio ou alugado
-
-  - nome: local_funcionamento_sala_empresa
-    tipo: INT64
-    descricao: O local de funcionamento da escola é um conjunto de salas de uma empresa
-
-  - nome: local_funcionamento_socioeducativo
-    tipo: INT64
-    descricao: O local de funcionamento da escola é uma unidade de atendimento socioeducativo
-
-  - nome: local_funcionamento_unidade_prisional
-    tipo: INT64
-    descricao: O local de funcionamento da escola é uma unidade prisional
-
-  - nome: local_funcionamento_prisional_socio
-    tipo: INT64
-    descricao: O local de funcionamento da escola é unidade prisional ou unidade de atendimento socioeducativo
-
-  - nome: local_funcionamento_templo_igreja
-    tipo: INT64
-    descricao: O local de funcionamento da escola é um templo ou uma igreja
-
-  - nome: local_funcionamento_casa_professor
-    tipo: INT64
-    descricao: O local de funcionamento da escola é uma casa de um professor
-
-  - nome: local_funcionamento_galpao
-    tipo: INT64
-    descricao: O local de funcionamento da escola é galpão/rancho/paiol/barracão
-
-  - nome: tipo_local_funcionamento_galpao
-    tipo: STRING
-    descricao: A forma de ocupação do galpão/rancho/paiol/barracão, e.g., próprio ou alugado
-
-  - nome: local_funcionamento_outra_escola
-    tipo: INT64
-    descricao: O local de funcionamento da escola é em salas em outra escola
-
-  - nome: local_funcionamento_outros
-    tipo: INT64
-    descricao: O local de funcionamento da escola é em outros
-
-  - nome: predio_compartilhado
-    tipo: INT64
-    descricao: O prédio compartilhado com outra escola
-
-  - nome: agua_filtrada
-    tipo: INT64
-    descricao: Água consumida pelos alunos é filtrada
-
-  - nome: agua_potavel
-    tipo: INT64
-    descricao: A escola fornece água potável para o consumo humano
-
-  - nome: agua_rede_publica
-    tipo: INT64
-    descricao: O abastecimento de água é pela rede pública
-
-  - nome: agua_poco_artesiano
-    tipo: INT64
-    descricao: O abastecimento de água é feito por poço artesiano
-
-  - nome: agua_cacimba
-    tipo: INT64
-    descricao: O abastecimento de água é feito por cacimba/cisterna/poço
-
-  - nome: agua_fonte_rio
-    tipo: INT64
-    descricao: O abastecimento de água é feito por fonte/rio/igarapé/riacho/córrego
-
-  - nome: agua_inexistente
-    tipo: INT64
-    descricao: O abastecimento de água é inexistente
-
-  - nome: energia_rede_publica
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é feito pela rede pública
-
-  - nome: energia_gerador
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é por gerador
-
-  - nome: energia_gerador_fossil
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é por gerador movido a combustível fóssil
-
-  - nome: energia_outros
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é por outras fontes
-
-  - nome: energia_renovavel
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é por fontes renováveis ou alternativas
-
-  - nome: energia_inexistente
-    tipo: INT64
-    descricao: O abastecimento de energia elétrica é inexistente
-
-  - nome: esgoto_rede_publica
-    tipo: INT64
-    descricao: O esgoto sanitário é feito pela rede pública
-
-  - nome: esgoto_fossa
-    tipo: INT64
-    descricao: O esgoto sanitário é feito por uma fossa
-
-  - nome: esgoto_fossa_septica
-    tipo: INT64
-    descricao: O esgoto sanitário é feito por uma fossa séptica
-
-  - nome: esgoto_fossa_comum
-    tipo: INT64
-    descricao: O esgoto sanitário é feito por uma fossa comum
-
-  - nome: esgoto_inexistente
-    tipo: INT64
-    descricao: O esgoto sanitário é inexistente
-
-  - nome: lixo_servico_coleta
-    tipo: INT64
-    descricao: O destino do lixo é o serviço de coleta
-
-  - nome: lixo_queima
-    tipo: INT64
-    descricao: O destino do lixo é a queima
-
-  - nome: lixo_enterrado
-    tipo: INT64
-    descricao: O destino do lixo é ser enterrado
-
-  - nome: lixo_destino_final_publico
-    tipo: INT64
-    descricao: O destino do lixo é uma destinação final financiada pelo poder público
-
-  - nome: lixo_descarta_outra_area
-    tipo: INT64
-    descricao: O destino do lixo é ser descartado em outra área
-
-  - nome: lixo_joga_outra_area
-    tipo: INT64
-    descricao: O destino do lixo é ser jogado em outra área
-
-  - nome: lixo_outros
-    tipo: INT64
-    descricao: O destino do lixo não se encaixa em nenhuma das outras variáveis
-
-  - nome: lixo_reciclagem
-    tipo: INT64
-    descricao: O destino do lixo é ser reciclado pela escola realiza
-
-  - nome: tratamento_lixo_separacao
-    tipo: INT64
-    descricao: O tratamento do lixo que a escola realiza é separação do lixo
-
-  - nome: tratamento_lixo_reutilizacao
-    tipo: INT64
-    descricao: O tratamento do lixo que a escola realiza é o reaproveitamento/reutilização
-
-  - nome: tratamento_lixo_reciclagem
-    tipo: INT64
-    descricao: O tratamento do lixo que a escola realiza é reciclagem
-
-  - nome: tratamento_lixo_inexistente
-    tipo: INT64
-    descricao: O tratamento do lixo que a escola realiza é inexistente
-
-  - nome: almoxarifado
-    tipo: INT64
-    descricao: A escola possui almoxarifado
-
-  - nome: area_verde
-    tipo: INT64
-    descricao: A escola possui área verde
-
-  - nome: auditorio
-    tipo: INT64
-    descricao: A escola possui auditório
-
-  - nome: banheiro_fora_predio
-    tipo: INT64
-    descricao: A escola possui banheiros fora do prédio
-
-  - nome: banheiro_dentro_predio
-    tipo: INT64
-    descricao: A escola possui banheiros dentro do prédio
-
-  - nome: banheiro
-    tipo: INT64
-    descricao: A escola possui banheiros
-
-  - nome: banheiro_educacao_infantil
-    tipo: INT64
-    descricao: A escola possui banheiros adequados à educação infantil
-
-  - nome: banheiro_pne
-    tipo: INT64
-    descricao: A escola possui banheiros adequados a pessoas com deficiência ou mobilidade reduzida
-
-  - nome: banheiro_funcionarios
-    tipo: INT64
-    descricao: A escola possui banheiros exclusivo para funcionários
-
-  - nome: banheiro_chuveiro
-    tipo: INT64
-    descricao: A escola possui banheiros ou vestiários com chuveiro
-
-  - nome: bercario
-    tipo: INT64
-    descricao: A escola possui berçário
-
-  - nome: biblioteca
-    tipo: INT64
-    descricao: A escola possui biblioteca
-
-  - nome: biblioteca_sala_leitura
-    tipo: INT64
-    descricao: A escola possui biblioteca e/ou sala de leitura
-
-  - nome: cozinha
-    tipo: INT64
-    descricao: A escola possui cozinha
-
-  - nome: despensa
-    tipo: INT64
-    descricao: A escola possui despensa
-
-  - nome: dormitorio_aluno
-    tipo: INT64
-    descricao: A escola possui dormitório de aluno
-
-  - nome: dormitorio_professor
-    tipo: INT64
-    descricao: A escola possui dormitório de professor
-
-  - nome: laboratorio_ciencias
-    tipo: INT64
-    descricao: A escola possui laboratório de ciências
-
-  - nome: laboratorio_informatica
-    tipo: INT64
-    descricao: A escola possui laboratório de informática
-
-  - nome: laboratorio_educacao_profissional
-    tipo: INT64
-    descricao: Dependências físicas existentes e utilizadas na escola - Laboratório específico para a Educação Profissional
-
-  - nome: patio_coberto
-    tipo: INT64
-    descricao: A escola possui pátio coberto
-
-  - nome: patio_descoberto
-    tipo: INT64
-    descricao: A escola possui pátio descoberto
-
-  - nome: parque_infantil
-    tipo: INT64
-    descricao: A escola possui parque infantil
-
-  - nome: piscina
-    tipo: INT64
-    descricao: A escola possui piscina
-
-  - nome: quadra_esportes
-    tipo: INT64
-    descricao: A escola possui quadra para prática de esportes
-
-  - nome: quadra_esportes_coberta
-    tipo: INT64
-    descricao: A escola possui quadra coberta para prática de esportes
-
-  - nome: quadra_esportes_descoberta
-    tipo: INT64
-    descricao: A escola possui quadra descoberta para prática de esportes
-
-  - nome: refeitorio
-    tipo: INT64
-    descricao: A escola possui refeitório
-
-  - nome: sala_atelie_artes
-    tipo: INT64
-    descricao: A escola possui sala ou ateliê de artes
-
-  - nome: sala_musica_coral
-    tipo: INT64
-    descricao: A escola possui sala de música ou coral
-
-  - nome: sala_estudio_danca
-    tipo: INT64
-    descricao: A escola possui sala ou estúdio de dança
-
-  - nome: sala_multiuso
-    tipo: INT64
-    descricao: A escola possui sala multiuso (música, dança e artes)
-
-  - nome: sala_estudio_gravacao
-    tipo: INT64
-    descricao: Dependências físicas existentes e utilizadas na escola - Estúdio de gravação e edição
-
-  - nome: sala_oficinas_educacao_profissional
-    tipo: INT64
-    descricao: Dependências físicas existentes e utilizadas na escola - Salas de oficinas da Educação Profissional
-
-  - nome: sala_diretoria
-    tipo: INT64
-    descricao: A escola possui sala de diretoria
-
-  - nome: sala_leitura
-    tipo: INT64
-    descricao: A escola possui sala de leitura
-
-  - nome: sala_professor
-    tipo: INT64
-    descricao: A escola possui sala de professores
-
-  - nome: sala_repouso_aluno
-    tipo: INT64
-    descricao: A escola possui sala de repouso para alunos
-
-  - nome: secretaria
-    tipo: INT64
-    descricao: A escola possui sala de secretaria
-
-  - nome: sala_atendimento_especial
-    tipo: INT64
-    descricao: A escola possui sala para atendimento educacional especializado (AEE)
-
-  - nome: terreirao
-    tipo: INT64
-    descricao: A escola possui terreirão
-
-  - nome: viveiro
-    tipo: INT64
-    descricao: A escola possui viveiro/criação de animais
-
-  - nome: dependencia_pne
-    tipo: INT64
-    descricao: A escola possui dependências e vias adequadas a alunos com deficiência ou mobilidade reduzida
-
-  - nome: lavanderia
-    tipo: INT64
-    descricao: A escola possui lavanderia
-
-  - nome: dependencia_outras
-    tipo: INT64
-    descricao: A escola possui dependências não inclusas nas outras variáveis
-
-  - nome: acessibilidade_corrimao
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade corrimão e guarda corpos
-
-  - nome: acessibilidade_elevador
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade elevador
-
-  - nome: acessibilidade_pisos_tateis
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade pisos táteis
-
-  - nome: acessibilidade_vao_livre
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade portas com vão livre de no mínimo 80 cm
-
-  - nome: acessibilidade_rampas
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade rampas
-
-  - nome: acessibilidade_sinal_sonoro
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade sinalização sonora
-
-  - nome: acessibilidade_sinal_tatil
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade sinalização tátil
-
-  - nome: acessibilidade_sinal_visual
-    tipo: INT64
-    descricao: A escola possui o recurso de acessibilidade sinalização visual
-
-  - nome: acessibilidade_inexistente
-    tipo: INT64
-    descricao: A escola não possui nenhum dos recursos de acessibilidade listados nas variáveis
-
-  - nome: quantidade_sala_existente
-    tipo: INT64
-    descricao: Número de salas de aula existentes na escola
-
-  - nome: quantidade_sala_utilizada
-    tipo: INT64
-    descricao: Número de salas de aula utilizadas na escola (dentro e fora do prédio)
-
-  - nome: quantidade_sala_utilizada_dentro
-    tipo: INT64
-    descricao: Número de salas de aula utilizadas na escola - Dentro do prédio
-
-  - nome: quantidade_sala_utilizada_fora
-    tipo: INT64
-    descricao: Número de salas de aula utilizadas na escola - Fora do prédio
-
-  - nome: quantidade_sala_utilizada_climatizada
-    tipo: INT64
-    descricao: Número de salas de aula climatizadas
-
-  - nome: quantidade_sala_utilizada_acessivel
-    tipo: INT64
-    descricao: Número de salas de aula  com acessibilidade para pessoas com deficiência ou mobilidade reduzida
-
-  - nome: equipamento_parabolica
-    tipo: INT64
-    descricao: A escola possui equipamentos de antena parabólica
-
-  - nome: quantidade_equipamento_parabolica
-    tipo: INT64
-    descricao: Quantidade de equipamentos de antena parabólica na escola
-
-  - nome: equipamento_computador
-    tipo: INT64
-    descricao: A escola possui equipamentos de computador
-
-  - nome: equipamento_copiadora
-    tipo: INT64
-    descricao: A escola possui equipamentos de copiadora
-
-  - nome: quantidade_equipamento_copiadora
-    tipo: INT64
-    descricao: Quantidade de equipamentos de copiadora na escola
-
-  - nome: equipamento_impressora
-    tipo: INT64
-    descricao: A escola possui equipamentos de impressora
-
-  - nome: quantidade_equipamento_impressora
-    tipo: INT64
-    descricao: Quantidade de equipamentos de impressora na escola
-
-  - nome: equipamento_impressora_multifuncional
-    tipo: INT64
-    descricao: A escola possui equipamentos de impressora multifuncional
-
-  - nome: quantidade_equipamento_impressora_multifuncional
-    tipo: INT64
-    descricao: Quantidade de equipamentos de impressora multifuncional na escola
-
-  - nome: equipamento_scanner
-    tipo: INT64
-    descricao: A escola possui equipamentos de scanner
-
-  - nome: equipamento_nenhum
-    tipo: INT64
-    descricao: A escola não possui nenhum dos equipamentos listados para uso técnico e administrativo
-
-  - nome: equipamento_dvd
-    tipo: INT64
-    descricao: A escola possui equipamentos de dvd
-
-  - nome: quantidade_equipamento_dvd
-    tipo: INT64
-    descricao: Quantidade de equipamentos de dvd na escola
-
-  - nome: equipamento_som
-    tipo: INT64
-    descricao: A escola possui equipamentos de som
-
-  - nome: quantidade_equipamento_som
-    tipo: INT64
-    descricao: Quantidade de equipamentos de som na escola
-
-  - nome: equipamento_tv
-    tipo: INT64
-    descricao: A escola possui equipamentos de televisão
-
-  - nome: quantidade_equipamento_tv
-    tipo: INT64
-    descricao: Quantidade de equipamentos de televisão na escola
-
-  - nome: equipamento_lousa_digital
-    tipo: INT64
-    descricao: A escola possui equipamentos de lousa digital
-
-  - nome: quantidade_equipamento_lousa_digital
-    tipo: INT64
-    descricao: Quantidades de equipamentos de lousa digital na escola
-
-  - nome: equipamento_multimidia
-    tipo: INT64
-    descricao: A escola possui equipamentos de projetor multimídia
-
-  - nome: quantidade_equipamento_multimidia
-    tipo: INT64
-    descricao: Quantidade de equipamentos de projetor multimídia na escola
-
-  - nome: equipamento_videocassete
-    tipo: INT64
-    descricao: A escola possui equipamentos de videocassete
-
-  - nome: quantidade_equipamento_videocassete
-    tipo: INT64
-    descricao: Quantidade de equipamentos de videocassete na escola
-
-  - nome: equipamento_retroprojetor
-    tipo: INT64
-    descricao: A escola possui equipamentos de retroprojetor
-
-  - nome: quantidade_equipamento_retroprojetor
-    tipo: INT64
-    descricao: Quantidade de equipamentos de retroprojetor na escola
-
-  - nome: equipamento_fax
-    tipo: INT64
-    descricao: A escola possui equipamentos de fax
-
-  - nome: quantidade_equipamento_fax
-    tipo: INT64
-    descricao: Quantidade de equipamentos de fax na escola
-
-  - nome: equipamento_foto
-    tipo: INT64
-    descricao: A escola possui equipamentos de fotografia
-
-  - nome: quantidade_equipamento_foto
-    tipo: INT64
-    descricao: Quantidade de equipamentos de fotografia na escola
-
-  - nome: quantidade_computador_aluno
-    tipo: INT64
-    descricao: Quantidade de computadores em uso pelos alunos
-
-  - nome: desktop_aluno
-    tipo: INT64
-    descricao: A escola possui computador de mesa (desktop) em uso pelos alunos
-
-  - nome: quantidade_desktop_aluno
-    tipo: INT64
-    descricao: Quantidade de computador de mesa (desktop) em uso pelos alunos
-
-  - nome: computador_portatil_aluno
-    tipo: INT64
-    descricao: A escola possui computador portátil em uso pelos alunos
-
-  - nome: quantidade_computador_portatil_aluno
-    tipo: INT64
-    descricao: Quantidade de computador portátil em uso pelos alunos
-
-  - nome: tablet_aluno
-    tipo: INT64
-    descricao: A escola possui tablet em uso pelos alunos
-
-  - nome: quantidade_tablet_aluno
-    tipo: INT64
-    descricao: Quantidade de tablet em uso pelos alunos
-
-  - nome: quantidade_computador
-    tipo: INT64
-    descricao: Quantidade de computadores na escola
-
-  - nome: quantidade_computador_administrativo
-    tipo: INT64
-    descricao: Quantidade de computadores de uso administrativo na escola
-
-  - nome: internet
-    tipo: INT64
-    descricao: A escola possui acesso à internet
-
-  - nome: internet_alunos
-    tipo: INT64
-    descricao: A escola possui acesso à internet para uso dos alunos
-
-  - nome: internet_administrativo
-    tipo: INT64
-    descricao: A escola possui acesso à internet para uso do administrativo
-
-  - nome: internet_aprendizagem
-    tipo: INT64
-    descricao: A escola possui acesso à internet para uso nos processos de ensino e aprendizagem
-
-  - nome: internet_comunidade
-    tipo: INT64
-    descricao: A escola possui acesso à internet para uso da comunidade
-
-  - nome: acesso_internet_computador
-    tipo: INT64
-    descricao: Os equipamentos de computador e tablet que os alunos usam possuem acesso à internet
-
-  - nome: acesso_internet_dispositivo_pessoal
-    tipo: INT64
-    descricao: Os equipamentos de dispositivo pessoal que os alunos usam possuem acesso à internet
-
-  - nome: tipo_rede_local
-    tipo: STRING
-    descricao: Tipo de rede local de interligação de computadores na escola
-
-  - nome: banda_larga
-    tipo: INT64
-    descricao: A escola possui acesso à internet banda larga
-
-  - nome: quantidade_funcionario
-    tipo: INT64
-    descricao: Quantidade de funcionários da escola
-
-  - nome: profissional_administrativo
-    tipo: INT64
-    descricao: A escola possui auxiliar de secretaria ou auxiliar administrativo, atendente
-
-  - nome: quantidade_profissional_administrativo
-    tipo: INT64
-    descricao: Quantidade de auxiliar de secretaria ou auxiliar administrativo, atendente na escola
-
-  - nome: profissional_servico_geral
-    tipo: INT64
-    descricao: A escola possui auxiliar de serviços gerais e similares
-
-  - nome: quantidade_profissional_servico_geral
-    tipo: INT64
-    descricao: Quantidade de auxiliar de serviços gerais e similares na escola
-
-  - nome: profissional_bibliotecario
-    tipo: INT64
-    descricao: A escola possui bibliotecário
-
-  - nome: quantidade_profissional_bibliotecario
-    tipo: INT64
-    descricao: Quantidade de bibliotecário na escola
-
-  - nome: profissional_saude
-    tipo: INT64
-    descricao: A escola possui profissional de saúde (bombeiro, enfermeiro...)
-
-  - nome: quantidade_profissional_saude
-    tipo: INT64
-    descricao: Quantidade de profissional de saúde (bombeiro, enfermeiro...) na escola
-
-  - nome: profissional_coordenador
-    tipo: INT64
-    descricao: A escola possui coordenador de turno/disciplina
-
-  - nome: quantidade_profissional_coordenador
-    tipo: INT64
-    descricao: Quantidade de coordenador de turno/disciplina na escola
-
-  - nome: profissional_fonaudiologo
-    tipo: INT64
-    descricao: A escola possui fonaudiólogo
-
-  - nome: quantidade_profissional_fonaudiologo
-    tipo: INT64
-    descricao: Quantidade de fonaudiólogo na escola
-
-  - nome: profissional_nutricionista
-    tipo: INT64
-    descricao: A escola possui nutricionista
-
-  - nome: quantidade_profissional_nutricionista
-    tipo: INT64
-    descricao: Quantidade de nutricionista na escola
-
-  - nome: profissional_psicologo
-    tipo: INT64
-    descricao: A escola possui psicológo
-
-  - nome: quantidade_profissional_psicologo
-    tipo: INT64
-    descricao: Quantidade de psicológo na escola
-
-  - nome: profissional_alimentacao
-    tipo: INT64
-    descricao: A escola possui profissional de preparação e segurança alimentar
-
-  - nome: quantidade_profissional_alimentacao
-    tipo: INT64
-    descricao: Quantidade de profissional de preparação e segurança alimentar na escola
-
-  - nome: profissional_pedagogia
-    tipo: INT64
-    descricao: A escola possui profissional de pedagogia
-
-  - nome: quantidade_profissional_pedagogia
-    tipo: INT64
-    descricao: Quantidade de profissional de pedagogia na escola
-
-  - nome: profissional_secretario
-    tipo: INT64
-    descricao: A escola possui secretário(a) escolar
-
-  - nome: quantidade_profissional_secretario
-    tipo: INT64
-    descricao: Quantidade de secretário(a) escolar na escola
-
-  - nome: profissional_seguranca
-    tipo: INT64
-    descricao: A escola possui profissional de segurança
-
-  - nome: quantidade_profissional_seguranca
-    tipo: INT64
-    descricao: Quantidade de profissional de segurança na escola
-
-  - nome: profissional_monitor
-    tipo: INT64
-    descricao: A escola possui técnico de laboratório/monitor/similar
-
-  - nome: quantidade_profissional_monitor
-    tipo: INT64
-    descricao: Quantidade de técnico de laboratório/monitor/similar na escola
-
-  - nome: profissional_gestao
-    tipo: INT64
-    descricao: A escola possui profissional de gestão administrativa
-
-  - nome: quantidade_profissional_gestao
-    tipo: INT64
-    descricao: Quantidade de profissional de gestão administrativa na escola
-
-  - nome: profissional_assistente_social
-    tipo: INT64
-    descricao: A escola possui assistente social
-
-  - nome: quantidade_profissional_assistente_social
-    tipo: INT64
-    descricao: Quantidade de assistente social na escola
-
-  - nome: profissional_tradutor_libras
-    tipo: INT64
-    descricao: Profissionais que atuam na escola - Tradutor e Intérprete de Libras para atendimento em outros ambientes da escola que não seja sala de aula
-
-  - nome: quantidade_profissional_tradutor_libras
-    tipo: INT64
-    descricao: Total de profissionais que atuam na escola - Tradutor e Intérprete de Libras para atendimento em outros ambientes da escola que não seja sala de aula
-
-  - nome: alimentacao
-    tipo: INT64
-    descricao: A escola oferece alimentação escola para os alunos - PNAE/FNDE
-
-  - nome: organizacao_serie_ano
-    tipo: INT64
-    descricao: A escola possui como forma de organização do ensino série/ano (séries anuais)
-
-  - nome: organizacao_semestre
-    tipo: INT64
-    descricao: A escola possui como forma de organização do ensino semestres
-
-  - nome: organizacao_fundamental_ciclo
-    tipo: INT64
-    descricao: A escola possui como forma de organização do ensino ciclo(s) do ensino fundamental
-
-  - nome: organizacao_grupo_nao_seriado
-    tipo: INT64
-    descricao: A escola possui como forma de organização do grupos não-seriados com base na idade ou competência (art. 23 LDB)
-
-  - nome: organizacao_modulo
-    tipo: INT64
-    descricao: A escola possui como forma de organização do ensino módulos
-
-  - nome: organizacao_alternancia
-    tipo: INT64
-    descricao: A escola possui como forma de organização do ensino alternância regular de períodos de estudos
-
-  - nome: material_pedagogico_multimidia
-    tipo: INT64
-    descricao: A escola possui acervo multimídia em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_infantil
-    tipo: INT64
-    descricao: A escola possui brinquedos em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_cientifico
-    tipo: INT64
-    descricao: A escola possui materiais científicos em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_difusao
-    tipo: INT64
-    descricao: A escola possui materiais de difusão de áudio em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_musical
-    tipo: INT64
-    descricao: A escola possui materiais musicais em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_jogo
-    tipo: INT64
-    descricao: A escola possui jogos em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_artistica
-    tipo: INT64
-    descricao: A escola possui materiais artísticos em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_profissional
-    tipo: INT64
-    descricao: Instrumentos e materiais socioculturais e/ou pedagógicos em uso na escola para o desenvolvimento de atividades de ensino e aprendizagem - Materiais para Educação Profissional
-
-  - nome: material_pedagogico_desportiva
-    tipo: INT64
-    descricao: A escola possui materiais desportivos em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_indigena
-    tipo: INT64
-    descricao: A escola possui materiais para educação índigena em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_etnico
-    tipo: INT64
-    descricao: A escola possui materiais da educação étnica em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_campo
-    tipo: INT64
-    descricao: A escola possui materiais para educação no campo em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_pedagogico_surdo
-    tipo: INT64
-    descricao: Instrumentos, materiais socioculturais e/ou pedagógicos em uso na escola para o desenvolvimento de atividades de ensino aprendizagem - Materiais pedagógicos para a educação bilíngue de surdos
-
-  - nome: material_pedagogico_nenhum
-    tipo: INT64
-    descricao: A escola não possui materiais em uso para o desenvolvimento de atividades de aprendizagem
-
-  - nome: material_especifico_quilombola
-    tipo: INT64
-    descricao: A escola usa materiais didáticos específicos para atendimento à diversidade sociocultural quilombola
-
-  - nome: material_especifico_indigena
-    tipo: INT64
-    descricao: A escola usa materiais didáticos específicos para atendimento à diversidade sociocultural indígena
-
-  - nome: material_especifico_nao_utiliza
-    tipo: INT64
-    descricao: A escola não usa materiais didáticos específicos para atendimento à diversidade sociocultural
+    descricao: Se a escola fica em área de localização diferenciada.
+    valores_exemplo: ["1", "2", "3", "4"]
+    nota: 1 = Não está em área diferenciada; 2 = Assentamento; 3 = Terra indígena; 4 = Comunidade quilombola.
 
   - nome: educacao_indigena
     tipo: INT64
-    descricao: A escola possui educação indígena
+    descricao: Indica se a escola oferece educação indígena.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: tipo_lingua_indigena
-    tipo: STRING
-    descricao: Língua em que o ensino da escola com educação indígena é ministrado
-
-  - nome: id_lingua_indigena_1
-    tipo: STRING
-    descricao: 1ª língua indígena em que o ensino é ministrado
-
-  - nome: id_lingua_indigena_2
-    tipo: STRING
-    descricao: 2ª língua indígena em que o ensino é ministrado
-
-  - nome: id_lingua_indigena_3
-    tipo: STRING
-    descricao: 3ª língua indígena em que o ensino é ministrado
-
-  - nome: programa_brasil_alfabetizado
+  - nome: agua_potavel
     tipo: INT64
-    descricao: A escola cede espaço para turmas do Programa Brasil Alfabetizado
+    descricao: Indica se a escola fornece água potável para consumo.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: final_semana
+  - nome: esgoto_rede_publica
     tipo: INT64
-    descricao: A escola abre aos finais de semana para a comunidade
+    descricao: Indica se o esgoto da escola vai para a rede pública.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: exame_selecao
+  - nome: energia_rede_publica
     tipo: INT64
-    descricao: A escola faz exame de seleção para ingresso de seus alunos
+    descricao: Indica se a energia elétrica da escola vem da rede pública.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_raca_cor
+  - nome: banheiro
     tipo: INT64
-    descricao: 'A escola faz reserva de vagas por sistema de cotas para grupos: Autodeclarado preto, pardo ou indígena (PPI)'
+    descricao: Indica se a escola tem banheiro.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_renda
+  - nome: alimentacao
     tipo: INT64
-    descricao: 'A escola faz reserva de vagas por sistema de cotas para grupos: Condição de renda'
+    descricao: Indica se a escola oferece alimentação escolar (PNAE).
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_publica
+  - nome: biblioteca_sala_leitura
     tipo: INT64
-    descricao: 'A escola faz reserva de vagas por sistema de cotas para grupos: Oriundo de escola pública'
+    descricao: Indica se a escola tem biblioteca ou sala de leitura.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_pcd
+  - nome: laboratorio_informatica
     tipo: INT64
-    descricao: 'A escola faz reserva de vagas por sistema de cotas para grupos: PCD'
+    descricao: Indica se a escola tem laboratório de informática.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_outros
+  - nome: laboratorio_ciencias
     tipo: INT64
-    descricao: 'A escola faz reserva de vagas por sistema de cotas para grupos: Outros'
+    descricao: Indica se a escola tem laboratório de ciências.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: reserva_vaga_nenhuma
+  - nome: quadra_esportes
     tipo: INT64
-    descricao: A escola não faz reserva de vagas por sistema de cotas para grupos
+    descricao: Indica se a escola tem quadra de esportes.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: redes_sociais
+  - nome: acessibilidade_inexistente
     tipo: INT64
-    descricao: A escola possui redes sociais para comunicação institucional
+    descricao: Indica que a escola NÃO tem nenhum recurso de acessibilidade (rampa, corrimão, elevador, piso tátil etc.).
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Não tem nenhum recurso; 0 = Tem pelo menos um.
 
-  - nome: espaco_atividade_comunidade
+  - nome: internet
     tipo: INT64
-    descricao: A escola compartilha espaços para atividades de integração escola-comunidade
+    descricao: Indica se a escola tem acesso à internet.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: espaco_equipamento_alunos
+  - nome: internet_alunos
     tipo: INT64
-    descricao: A escola usa espaços e equipamentos do entorno escolar para atividades regulares com os alunos
+    descricao: Indica se a escola tem internet para uso dos alunos.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: orgao_associacao_pais
+  - nome: banda_larga
     tipo: INT64
-    descricao: A escola possui associação de pais
+    descricao: Indica se a escola tem internet banda larga.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: orgao_associacao_pais_mestres
+  - nome: acesso_internet_computador
     tipo: INT64
-    descricao: A escola possui associação de pais e mestres
+    descricao: Indica se os computadores e tablets usados pelos alunos têm acesso à internet.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
-  - nome: orgao_conselho_escolar
+  - nome: quantidade_computador_aluno
     tipo: INT64
-    descricao: A escola possui conselho escolar
+    descricao: Quantidade de computadores em uso pelos alunos.
 
-  - nome: orgao_gremio_estudantil
+  - nome: profissional_psicologo
     tipo: INT64
-    descricao: A escola possui grêmio estudantil
-
-  - nome: orgao_outros
-    tipo: INT64
-    descricao: A escola possui outros órgãos colegiados
-
-  - nome: orgao_nenhum
-    tipo: INT64
-    descricao: A escola não possui órgãos colegiados
-
-  - nome: tipo_proposta_pedagogica
-    tipo: STRING
-    descricao: O tipo de proposta pedagógica da escola atualizado nos últimos 12 meses até a data de referência
-
-  - nome: tipo_aee
-    tipo: STRING
-    descricao: O tipo de Atendimento Educacional Especializado (AEE) que a escola oferece
-
-  - nome: tipo_atividade_complementar
-    tipo: STRING
-    descricao: O tipo de Atividade Complementar que a escola oferece
-
-  - nome: escolarizacao
-    tipo: INT64
-    descricao: 'Escola possui uma ou mais matrículas de escolarização em alguma das seguintes etapas de ensino: Creche, Pré-Escola, Ensino Fundamental, Ensino Médio, Educação de Jovens e Adultos (EJA), Curso Técnico Concomitante, Curso Técnico Subsequente, Curso FIC Concomitante'
-
-  - nome: mediacao_presencial
-    tipo: INT64
-    descricao: A escola oferece mediação didático-pedagógica presencial
-
-  - nome: mediacao_semipresencial
-    tipo: INT64
-    descricao: A escola oferece mediação didático-pedagógica semipresencial
-
-  - nome: mediacao_ead
-    tipo: INT64
-    descricao: A escola oferece mediação didático-pedagógica ead
-
-  - nome: regular
-    tipo: INT64
-    descricao: A escola oferece metodologia de ensino em etapas consecutivas, da creche ao ensino médio
-
-  - nome: diurno
-    tipo: INT64
-    descricao: A escola possui turmas com horário de início da turma de escolarização entre 05h e 16h
-
-  - nome: noturno
-    tipo: INT64
-    descricao: A escola possui turmas com horário de início da turma de escolarização entre 17h e 04h
-
-  - nome: ead
-    tipo: INT64
-    descricao: A escola possui turmas semipresenciais ou de educação a distância (EAD)
-
-  - nome: educacao_basica
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação básica
-
-  - nome: etapa_ensino_infantil
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação infantil
-
-  - nome: etapa_ensino_infantil_creche
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação básica - creche
-
-  - nome: etapa_ensino_infantil_pre_escola
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação básica - pré-escola
-
-  - nome: etapa_ensino_fundamental
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas no ensino fundamental
-
-  - nome: etapa_ensino_fundamental_anos_iniciais
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas no ensino fundamental - anos iniciais
-
-  - nome: etapa_ensino_fundamental_anos_finais
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas no ensino fundamental - anos finais
-
-  - nome: etapa_ensino_medio
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas no ensino médio
-
-  - nome: etapa_ensino_profissional
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação profissional
-
-  - nome: etapa_ensino_profissional_tecnica
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação profissional técnica
-
-  - nome: etapa_ensino_eja
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação de jovens e adultos (EJA)
-
-  - nome: etapa_ensino_eja_fundamental
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas en educação de jovens e adultos (EJA) - ensino fundamental
-
-  - nome: etapa_ensino_eja_medio
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação de jovens e adultos (EJA) - ensino médio
-
-  - nome: etapa_ensino_especial
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação especial
-
-  - nome: etapa_ensino_especial_comum
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação especial - classe comum
-
-  - nome: etapa_ensino_especial_exclusiva
-    tipo: INT64
-    descricao: A escola possui uma ou mais matrículas em educação especial - classe exclusiva (ao menos uma turma exclusiva de alunos com deficiência, transtorno global do desenvolvimento ou altas habilidades/superdotação - Classes Especiais)
-
-  - nome: etapa_ensino_creche_comum
-    tipo: INT64
-    descricao: A escola oferece creche em classes comuns do ensino regular
-
-  - nome: etapa_ensino_pre_escola_comum
-    tipo: INT64
-    descricao: A escola oferece pré-escola em classes comuns do ensino regular
-
-  - nome: etapa_ensino_fundamental_anos_iniciais_comum
-    tipo: INT64
-    descricao: A escola oferece anos iniciais do ensino fundamental em classes comuns do ensino regular
-
-  - nome: etapa_ensino_fundamental_anos_finais_comum
-    tipo: INT64
-    descricao: A escola oferece anos finais do ensino fundamental em classes comuns do ensino regular
-
-  - nome: etapa_ensino_medio_comum
-    tipo: INT64
-    descricao: A escola oferece ensino médio (médio propedêutico) em classes comuns do ensino regular
-
-  - nome: etapa_ensino_medio_integrado_comum
-    tipo: INT64
-    descricao: A escola oferece curso técnico integrado ao ensino médio em classes comuns do ensino regular
-
-  - nome: etapa_ensino_medio_normal_comum
-    tipo: INT64
-    descricao: A escola oferece ensino médio (normal ou magistério) em classes comuns do ensino regular
-
-  - nome: etapa_ensino_profissional_comum
-    tipo: INT64
-    descricao: A escola oferece educação profissional (curso técnico e/ou curso FIC) em classes comuns
-
-  - nome: etapa_ensino_eja_fundamental_comum
-    tipo: INT64
-    descricao: A escola oferece ensino fundamental em classes comuns da EJA
-
-  - nome: etapa_ensino_eja_medio_comum
-    tipo: INT64
-    descricao: A escola oferece ensino médio em classes comuns da EJA
-
-  - nome: etapa_ensino_eja_profissional_comum
-    tipo: INT64
-    descricao: A escola oferece educação profissional integrada em classes comuns da EJA
-
-  - nome: etapa_ensino_creche_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece creche em classes especiais exclusivas para alunos com condições especiais
-
-  - nome: etapa_ensino_pre_escola_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece pré-escola em classes especiais exclusivas do ensino regular
-
-  - nome: etapa_ensino_fundamental_anos_iniciais_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece os anos iniciais do ensino fundamental em classes especiais
-
-  - nome: etapa_ensino_fundamental_anos_finais_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece os anos finais do ensino fundamental em classes especiais
-
-  - nome: etapa_ensino_medio_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece ensino médio (médio propedêutico) em classes especiais
-
-  - nome: etapa_ensino_medio_integrado_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece curso técnico integrado ao ensino médio em classes especiais
-
-  - nome: etapa_ensino_medio_normal_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece ensino médio (normal/magistério) em classes especiais
-
-  - nome: etapa_ensino_profissional_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece educação profissional - curso técnico concomitante e/ou susequente e/ou curso FIC concomitante em classes especiais
-
-  - nome: etapa_ensino_eja_fundamental_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece ensino fundamental em classes especiais exclusivas da EJA
-
-  - nome: etapa_ensino_eja_medio_especial_exclusiva
-    tipo: INT64
-    descricao: A escola oferece ensino médio em classes especiais exclusivas da EJA
+    descricao: Indica se a escola tem psicólogo.
+    valores_exemplo: ["0", "1"]
+    nota: 1 = Sim; 0 = Não.
 
   - nome: quantidade_matricula_educacao_basica
     tipo: INT64
-    descricao: Quantidade de matrículas em educação básica
-
-  - nome: quantidade_matricula_infantil
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil
+    descricao: Total de matrículas na educação básica (todas as etapas).
 
   - nome: quantidade_matricula_infantil_creche
     tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil - creche
-
-  - nome: quantidade_matricula_infantil_pre_escola
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil - pré-escola
-
-  - nome: quantidade_matricula_fundamental
-    tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental
-
-  - nome: quantidade_matricula_fundamental_anos_iniciais
-    tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental - anos iniciais
-
-  - nome: quantidade_matricula_fundamental_1_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Iniciais - 1º Ano
-
-  - nome: quantidade_matricula_fundamental_2_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Iniciais - 2º Ano
-
-  - nome: quantidade_matricula_fundamental_3_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Iniciais - 3º Ano
-
-  - nome: quantidade_matricula_fundamental_4_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Iniciais - 4º Ano
-
-  - nome: quantidade_matricula_fundamental_5_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Iniciais - 5º Ano
-
-  - nome: quantidade_matricula_fundamental_anos_finais
-    tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental - anos finais
-
-  - nome: quantidade_matricula_fundamental_6_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Finais - 6º Ano
-
-  - nome: quantidade_matricula_fundamental_7_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Finais - 7º Ano
-
-  - nome: quantidade_matricula_fundamental_8_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Finais - 8º Ano
-
-  - nome: quantidade_matricula_fundamental_9_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Fundamental - Anos Finais - 9º Ano
-
-  - nome: quantidade_matricula_medio
-    tipo: INT64
-    descricao: Quantidade de matrículas no ensino médio
-
-  - nome: quantidade_matricula_medio_propedeutico
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico
-
-  - nome: quantidade_matricula_medio_propedeutico_1_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico - 1º ano/1ª Série
-
-  - nome: quantidade_matricula_medio_propedeutico_2_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico - 2º ano/2ª Série
-
-  - nome: quantidade_matricula_medio_propedeutico_3_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico - 3º ano/3ª Série
-
-  - nome: quantidade_matricula_medio_propedeutico_4_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico - 4º ano/4ª Série
-
-  - nome: quantidade_matricula_medio_propedeutico_nao_seriado
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Propedêutico - Não Seriado
-
-  - nome: quantidade_matricula_medio_tecnico
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional
-
-  - nome: quantidade_matricula_medio_tecnico_1_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional - 1º ano/1ª Série
-
-  - nome: quantidade_matricula_medio_tecnico_2_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional - 2º ano/2ª Série
-
-  - nome: quantidade_matricula_medio_tecnico_3_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional - 3º ano/3ª Série
-
-  - nome: quantidade_matricula_medio_tecnico_4_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional - 4º ano/4ª Série
-
-  - nome: quantidade_matricula_medio_tecnico_nao_seriado
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio - Curso Técnico Integrado à Educação Profissional - Não Seriado
-
-  - nome: quantidade_matricula_medio_magisterio
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio -  Modalidade Normal/Magistério
-
-  - nome: quantidade_matricula_medio_magisterio_1_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio -  Modalidade Normal/Magistério - 1º ano/1ª Série
-
-  - nome: quantidade_matricula_medio_magisterio_2_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio -  Modalidade Normal/Magistério - 2º ano/2ª Série
-
-  - nome: quantidade_matricula_medio_magisterio_3_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio -  Modalidade Normal/Magistério - 3º ano/3ª Série
-
-  - nome: quantidade_matricula_medio_magisterio_4_ano
-    tipo: INT64
-    descricao: Número de Matrículas do Ensino Médio -  Modalidade Normal/Magistério - 4º ano/4ª Série
-
-  - nome: quantidade_matricula_profissional
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação profissional
-
-  - nome: quantidade_matricula_profissional_tecnica
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação profissional técnica
-
-  - nome: quantidade_matricula_profissional_tecnica_concomitante
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Profissional Técnica - Curso Técnico Concomitante
-
-  - nome: quantidade_matricula_profissional_tecnica_subsequente
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Profissional Técnica - Curso Técnico Subsequente
-
-  - nome: quantidade_matricula_profissional_fic_concomitante
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Profissional - Curso FIC Concomitante
-
-  - nome: quantidade_matricula_eja
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação de jovens e adultos (EJA)
-
-  - nome: quantidade_matricula_eja_fundamental
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação de jovens e adultos (EJA) - ensino fundamental
-
-  - nome: quantidade_matricula_eja_fundamental_anos_iniciais
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Fundamental - Anos Iniciais
-
-  - nome: quantidade_matricula_eja_fundamental_anos_finais
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Fundamental - Anos Finais
-
-  - nome: quantidade_matricula_eja_fundamental_fic
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Fundamental - Curso FIC Integrado na Modalidade EJA de Nível Fundamental
-
-  - nome: quantidade_matricula_eja_medio
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação de jovens e adultos (EJA) - ensino médio
-
-  - nome: quantidade_matricula_eja_medio_nao_profissionalizante
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Médio - Sem componente profissionalizante
-
-  - nome: quantidade_matricula_eja_medio_fic
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Médio - Curso FIC Integrado na Modalidade EJA de Nível Médio
-
-  - nome: quantidade_matricula_eja_medio_tecnico
-    tipo: INT64
-    descricao: Número de Matrículas da Educação de Jovens e Adultos (EJA) - Ensino Médio - Curso Técnico Integrado na Modalidade EJA de Nível Médio
-
-  - nome: quantidade_matricula_especial
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação especial
-
-  - nome: quantidade_matricula_especial_comum
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação especial - classe comum
-
-  - nome: quantidade_matricula_especial_exclusiva
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação especial - classe exclusiva
-
-  - nome: quantidade_matricula_feminino
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos do gênero feminino
-
-  - nome: quantidade_matricula_masculino
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos do gênero masculino
-
-  - nome: quantidade_matricula_nao_declarada
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça não declarada
-
-  - nome: quantidade_matricula_branca
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça branca
-
-  - nome: quantidade_matricula_preta
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça preta
-
-  - nome: quantidade_matricula_parda
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça parda
-
-  - nome: quantidade_matricula_amarela
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça amarela
-
-  - nome: quantidade_matricula_indigena
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com cor/raça indigena
-
-  - nome: quantidade_matricula_idade_0_3
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos até 3 anos de idade
-
-  - nome: quantidade_matricula_idade_4_5
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos entre 4 e 5 anos de idade
-
-  - nome: quantidade_matricula_idade_6_10
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos entre 6 e 10 anos de idade
-
-  - nome: quantidade_matricula_idade_11_14
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos entre 11 e 14 anos de idade
-
-  - nome: quantidade_matricula_idade_15_17
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos entre 15 e 17 anos de idade
-
-  - nome: quantidade_matricula_idade_18
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica de alunos com 18 anos de idade ou mais
-
-  - nome: quantidade_matricula_diurno
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica - Turno diurno
-
-  - nome: quantidade_matricula_noturno
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica - Turno noturno
-
-  - nome: quantidade_matricula_ead
-    tipo: INT64
-    descricao: Quantidade de matrículas na educação básica - A distância
-
-  - nome: quantidade_matricula_infantil_integral
-    tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil - Tempo integral
+    descricao: Matrículas em creche (educação infantil, 0 a 3 anos).
 
   - nome: quantidade_matricula_infantil_creche_integral
     tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil (creche) - Tempo integral
+    descricao: Matrículas em creche em tempo integral.
 
-  - nome: quantidade_matricula_infantil_pre_escola_integral
+  - nome: quantidade_matricula_infantil_pre_escola
     tipo: INT64
-    descricao: Quantidade de matrículas em educação infantil (pré-escola) - Tempo integral
+    descricao: Matrículas na pré-escola (educação infantil, 4 e 5 anos).
+
+  - nome: quantidade_matricula_fundamental_anos_iniciais
+    tipo: INT64
+    descricao: Matrículas nos anos iniciais do ensino fundamental (1º ao 5º ano).
+
+  - nome: quantidade_matricula_fundamental_anos_finais
+    tipo: INT64
+    descricao: Matrículas nos anos finais do ensino fundamental (6º ao 9º ano).
 
   - nome: quantidade_matricula_fundamental_integral
     tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental - Tempo integral
+    descricao: Matrículas no ensino fundamental em tempo integral.
 
-  - nome: quantidade_matricula_fundamental_anos_iniciais_integral
+  - nome: quantidade_matricula_medio
     tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental (anos iniciais)  - Tempo integral
-
-  - nome: quantidade_matricula_fundamental_anos_finais_integral
-    tipo: INT64
-    descricao: Quantidade de matrículas no ensino fundamental (anos finais) - Tempo integral
+    descricao: Matrículas no ensino médio.
 
   - nome: quantidade_matricula_medio_integral
     tipo: INT64
-    descricao: Quantidade de matrículas no ensino médio - Tempo integral
+    descricao: Matrículas no ensino médio em tempo integral.
 
-  - nome: quantidade_matricula_zona_residencia_urbana
+  - nome: quantidade_matricula_eja
     tipo: INT64
-    descricao: Número de Matrículas da Educação Básica - Localização/Zona de residência do Aluno - Urbana
+    descricao: Matrículas na educação de jovens e adultos (EJA).
 
-  - nome: quantidade_matricula_zona_residencia_rural
+  - nome: quantidade_matricula_especial
     tipo: INT64
-    descricao: Número de Matrículas da Educação Básica - Localização/Zona de residência do Aluno - Rural
-
-  - nome: quantidade_matricula_zona_residencia_nao_aplicavel
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Básica - Localização/Zona de residência do Aluno - Não aplicável para alunos residentes no exterior
-
-  - nome: quantidade_matricula_utiliza_transporte_publico
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Básica de alunos que utilizam transporte escolar público
-
-  - nome: quantidade_matricula_transporte_estadual
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Básica segundo o poder público responsável pelo transporte escolar - Estadual
-
-  - nome: quantidade_matricula_transporte_municipal
-    tipo: INT64
-    descricao: Número de Matrículas da Educação Básica segundo o poder público responsável pelo transporte escolar - Municipal
+    descricao: Matrículas na educação especial.
 
   - nome: quantidade_docente_educacao_basica
     tipo: INT64
-    descricao: Quantidade de docentes da educação básica
-
-  - nome: quantidade_docente_infantil
-    tipo: INT64
-    descricao: Quantidade de docentes da educação infantil
-
-  - nome: quantidade_docente_infantil_creche
-    tipo: INT64
-    descricao: Quantidade de docentes da educação infantil - creche
-
-  - nome: quantidade_docente_infantil_pre_escola
-    tipo: INT64
-    descricao: Quantidade de docentes da educação infantil - pré-escola
-
-  - nome: quantidade_docente_fundamental
-    tipo: INT64
-    descricao: Quantidade de docentes do ensino fundamental
-
-  - nome: quantidade_docente_fundamental_anos_iniciais
-    tipo: INT64
-    descricao: Quantidade de docentes do ensino fundamental - anos iniciais
-
-  - nome: quantidade_docente_fundamental_anos_finais
-    tipo: INT64
-    descricao: Quantidade de docentes do ensino fundamental - anos finais
-
-  - nome: quantidade_docente_medio
-    tipo: INT64
-    descricao: Quantidade de docentes do ensino médio
-
-  - nome: quantidade_docente_profissional
-    tipo: INT64
-    descricao: Quantidade de docentes da educação profissional
-
-  - nome: quantidade_docente_profissional_tecnica
-    tipo: INT64
-    descricao: Quantidade de docentes da educação profissional técnica
-
-  - nome: quantidade_docente_eja
-    tipo: INT64
-    descricao: Quantidade de docentes da educação de jovens e adultos (EJA)
-
-  - nome: quantidade_docente_eja_fundamental
-    tipo: INT64
-    descricao: Quantidade de docentes da educação de jovens e adultos (EJA) - ensino fundamental
-
-  - nome: quantidade_docente_eja_medio
-    tipo: INT64
-    descricao: Quantidade de docentes da educação de jovens e adultos (EJA) - ensino médio
-
-  - nome: quantidade_docente_especial
-    tipo: INT64
-    descricao: Quantidade de docentes da educação especial
-
-  - nome: quantidade_docente_especial_comum
-    tipo: INT64
-    descricao: Quantidade de docentes da educação especial - classe comum
-
-  - nome: quantidade_docente_especial_exclusiva
-    tipo: INT64
-    descricao: Quantidade de docentes da educação especial - classe exclusiva
+    descricao: Quantidade de docentes da educação básica na escola.
 
   - nome: quantidade_turma_educacao_basica
     tipo: INT64
-    descricao: Quantidade de turmas de educação básica
-
-  - nome: quantidade_turma_infantil
-    tipo: INT64
-    descricao: Quantidade de turmas de educação infantil
-
-  - nome: quantidade_turma_infantil_integral
-    tipo: INT64
-    descricao: Número de Turmas da Educação Infantil - Tempo Integral
-
-  - nome: quantidade_turma_infantil_creche
-    tipo: INT64
-    descricao: Quantidade de turmas de educação infantil - creche
-
-  - nome: quantidade_turma_infantil_creche_integral
-    tipo: INT64
-    descricao: Número de Turmas da Educação Infantil - Creche - Tempo Integral
-
-  - nome: quantidade_turma_infantil_pre_escola
-    tipo: INT64
-    descricao: Quantidade de turmas de educação infantil - pré-escola
-
-  - nome: quantidade_turma_infantil_pre_escola_integral
-    tipo: INT64
-    descricao: Número de Turmas da Educação Infantil - Pré-Escola - Tempo Integral
-
-  - nome: quantidade_turma_fundamental
-    tipo: INT64
-    descricao: Quantidade de turmas de ensino fundamental
-
-  - nome: quantidade_turma_fundamental_integral
-    tipo: INT64
-    descricao: Número de Turmas do Ensino Fundamental - Tempo Integral
-
-  - nome: quantidade_turma_fundamental_anos_iniciais
-    tipo: INT64
-    descricao: Quantidade de turmas de ensino fundamental - anos iniciais
-
-  - nome: quantidade_turma_fundamental_anos_iniciais_integral
-    tipo: INT64
-    descricao: Número de Turmas do Ensino Fundamental - Anos Iniciais - Tempo Integral
-
-  - nome: quantidade_turma_fundamental_anos_finais
-    tipo: INT64
-    descricao: Quantidade de turmas de ensino fundamental - anos finais
-
-  - nome: quantidade_turma_fundamental_anos_finais_integral
-    tipo: INT64
-    descricao: Número de Turmas do Ensino Fundamental - Anos Finais - Tempo Integral
-
-  - nome: quantidade_turma_medio
-    tipo: INT64
-    descricao: Quantidade de turmas de ensino médio
-
-  - nome: quantidade_turma_medio_integral
-    tipo: INT64
-    descricao: Número de Turmas do Ensino Médio - Tempo Integral
-
-  - nome: quantidade_turma_profissional
-    tipo: INT64
-    descricao: Quantidade de turmas de educação profissional
-
-  - nome: quantidade_turma_profissional_tecnica
-    tipo: INT64
-    descricao: Quantidade de turmas de educação profissional técnica
-
-  - nome: quantidade_turma_eja
-    tipo: INT64
-    descricao: Quantidade de turmas de educação de jovens e adultos (EJA)
-
-  - nome: quantidade_turma_eja_fundamental
-    tipo: INT64
-    descricao: Quantidade de turmas de educação de jovens e adultos (EJA) - ensino fundamental
-
-  - nome: quantidade_turma_eja_medio
-    tipo: INT64
-    descricao: Quantidade de turmas de educação de jovens e adultos (EJA) - ensino médio
-
-  - nome: quantidade_turma_especial
-    tipo: INT64
-    descricao: Quantidade de turmas de educação especial
-
-  - nome: quantidade_turma_especial_comum
-    tipo: INT64
-    descricao: Quantidade de turmas de educação especial - classe comum
-
-  - nome: quantidade_turma_especial_exclusiva
-    tipo: INT64
-    descricao: Quantidade de turmas de educação especial - classe exclusiva
-
-  - nome: quantidade_turma_diurno
-    tipo: INT64
-    descricao: Número de Turmas da Educação Básica - Turno Diurno
-
-  - nome: quantidade_turma_noturno
-    tipo: INT64
-    descricao: Número de Turmas da Educação Básica - Turno Noturno
-
-  - nome: quantidade_turma_ead
-    tipo: INT64
-    descricao: Número de Turmas da Educação Básica - Turno não aplicável  para turmas semipresenciais ou de Educação a Distância (EAD)
+    descricao: Quantidade de turmas da educação básica na escola.
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
 consultas_exemplo:
-  - pergunta: Quantos alunos estudaram em turmas integrais ou semi-integrais em escolas públicas no município de Carpina/PE em 2024?
+  - pergunta: Quantas escolas municipais em atividade existiam em cada município de Pernambuco em 2024?
     sql: |
       SELECT
-        SUM(quantidade_matriculas),
-        etapa_ensino,
-        numero_duracao_turma
-      FROM `basedosdados.br_inep_censo_escolar.turma` turma
-      INNER JOIN `basedosdados.br_inep_censo_escolar.escola` escola ON
-        turma.id_escola = escola.id_escola
-      WHERE
-        turma.ano = 2024 AND
-        turma.id_municipio = '2604007' AND # Município de Carpina
-        escola.rede <> '4' # exclusão da rede privada
-      GROUP BY
-        etapa_ensino,
-        numero_duracao_turma
-      LIMIT 1000
+        mun.nome AS municipio,
+        COUNT(DISTINCT esc.id_escola) AS escolas_municipais
+      FROM `basedosdados.br_inep_censo_escolar.escola` AS esc
+      LEFT JOIN `basedosdados.br_bd_diretorios_brasil.municipio` AS mun
+        ON esc.id_municipio = mun.id_municipio
+      WHERE esc.ano = 2024
+        AND esc.sigla_uf = 'PE'
+        AND esc.rede = '3'
+        AND esc.tipo_situacao_funcionamento = '1'
+      GROUP BY municipio
+      ORDER BY escolas_municipais DESC
 
-  - pergunta: Quantas matrículas em creches integrais existiam por município do Estado de Pernambuco em 2024?
+  - pergunta: Quantas matrículas em creche em tempo integral havia em cada município de Pernambuco em 2024?
     sql: |
       SELECT
-        SUM(quantidade_matricula_infantil_creche_integral) AS num_matriculas_integrais,
-        id_municipio
+        id_municipio,
+        SUM(quantidade_matricula_infantil_creche_integral) AS matriculas_creche_integral
       FROM `basedosdados.br_inep_censo_escolar.escola`
-      WHERE
-        sigla_uf = 'PE' AND ano = 2024
-      GROUP BY
-        id_municipio
+      WHERE ano = 2024
+        AND sigla_uf = 'PE'
+      GROUP BY id_municipio
+      ORDER BY matriculas_creche_integral DESC
+
+  - pergunta: Quantas escolas públicas em atividade de Pernambuco tinham e não tinham internet para os alunos em 2024?
+    sql: |
+      SELECT
+        CASE internet_alunos
+          WHEN 1 THEN 'Com internet para alunos'
+          WHEN 0 THEN 'Sem internet para alunos'
+          ELSE 'Não informado'
+        END AS situacao,
+        COUNT(DISTINCT id_escola) AS escolas
+      FROM `basedosdados.br_inep_censo_escolar.escola`
+      WHERE ano = 2024
+        AND sigla_uf = 'PE'
+        AND rede IN ('1', '2', '3')
+        AND tipo_situacao_funcionamento = '1'
+      GROUP BY situacao

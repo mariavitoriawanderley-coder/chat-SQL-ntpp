@@ -1,16 +1,17 @@
-# GABARITO — preencha e troque `status` para `ativo`.
+# Revisado com os metadados oficiais da Base dos Dados (API pública),
+# consultados em 13/10/2026. Os valores de `rede` e `localizacao` foram
+# conferidos na tabela `uf` do mesmo conjunto (mesma convenção). Das 215
+# colunas, ficaram os indicadores agregados por etapa; os desdobramentos por
+# série seguem documentados no link de `url_documentacao`.
 #
 # O formato completo, campo a campo, está em `catalog/_schema.yaml`.
-# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
-# Dados antes de ativar: eles são o que vai no FROM da consulta.
-#
 # Depois de editar:  make validar-catalogo
 
 # ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
 id: br_inep_indicadores_educacionais__municipio
 dataset_id: br_inep_indicadores_educacionais
 table_id: municipio
-nome_exibicao: Ideb — Municípios
+nome_exibicao: Indicadores Educacionais — Municípios
 area: educacao
 fonte: INEP
 url_documentacao: https://basedosdados.org/dataset/63f1218f-c446-4835-b746-f109a338e3a1?table=f4d3f4d5-170e-405c-843c-73e670c55a89
@@ -19,300 +20,191 @@ status: rascunho
 # ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
 #     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
 resumo: >
-  Os indicadores educacionais atribuem valor estatístico à qualidade do ensino, atendo-se não 
-  somente ao desempenho dos alunos, mas também ao contexto econômico e social em que as escolas 
-  estão inseridas. Eles são úteis principalmente para o monitoramento dos sistemas educacionais,
-  considerando o acesso, a permanência e a aprendizagem de todos os alunos. Dessa forma, 
-  contribuem para a criação de políticas públicas voltadas para a melhoria da qualidade da 
-  educação e dos serviços oferecidos à sociedade pela escola.
+  Indicadores oficiais do INEP sobre o fluxo e as condições de ensino da
+  educação básica, calculados por município, rede e localização a cada ano.
+  Cada linha é um município em um ano para uma combinação de rede (municipal,
+  estadual, pública, privada, total) e localização (urbana, rural, total).
+  Traz taxas de aprovação, reprovação e abandono, distorção idade-série, média
+  de alunos por turma, horas-aula diárias e formação dos professores, por
+  etapa. Responde perguntas sobre desempenho e evolução das redes de ensino.
 
-  O Índice de Desenvolvimento da Educação Básica (Ideb) foi criado em 2007 e reúne informações 
-  sobre o fluxo escolar e o desempenho dos estudantes nas avaliações educacionais.
-  O Ideb é calculado a partir dos dados de aprovação escolar coletados pelo Censo Escolar e 
-  das médias de desempenho obtidas no Sistema de Avaliação da Educação Básica (Saeb).
-  O índice varia de 0 a 10 e combina indicadores de fluxo escolar e de desempenho dos 
-  estudantes. Essa metodologia permite analisar, de forma conjunta, informações sobre aprovação 
-  e aprendizagem, considerando que alterações em um desses componentes influenciam o resultado 
-  do indicador.
-
-  A tabela MUNICIPIO apresenta os indicadores do Ideb para cada município brasileiro, 
-  permitindo a análise da qualidade da educação básica em diferentes localidades do país.
-
-palavras_chave: [educação, ideb, desempenho escolar, fluxo escolar, aprendizagem, censo escolar]
+palavras_chave: [taxa de aprovação, reprovação, abandono escolar, evasão, distorção idade-série, alunos por turma, horas-aula, formação docente, indicadores educacionais, INEP, rendimento escolar, fluxo escolar]
 
 perguntas_exemplo:
-  - "Qual a taxa de distorção idade-série nos anos finais do ensino fundamental público do município de Agrestina/PE em 2024?"
-  - "Qual a taxa de aprovação dos anos iniciais do ensino fundamental público no município de Caruaru/PE em 2024?"
-  - "Qual foi o crescimento da taxa de abandono no ensino médio público no município de Caruaru/PE entre 2020 e 2024?"
+  - "Qual a taxa de distorção idade-série nos anos finais do ensino fundamental público de Agrestina/PE em 2024?"
+  - "Como evoluiu a taxa de abandono no ensino médio público de Caruaru/PE entre 2019 e 2024?"
+  - "Quais os 10 municípios de Pernambuco com maior taxa de reprovação nos anos finais da rede municipal em 2024?"
 
 # ─── CARACTERÍSTICAS ──────────────────────────────────────────────
-grao: informações do ideb agregadas por município, incluindo taxa de aprovação e de abandono por etapa de ensino.
+grao: Uma linha por município, ano, rede e localização.
 cobertura_temporal: { inicio: 2006, fim: 2024 }
-cobertura_geografica: município e estados (UF)
+cobertura_geografica: Brasil, por município (sem coluna de UF)
 # Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
 # aqui precisa existir em `colunas` com `particao: true`.
 particoes: [ano]
 sem_particao: false
-volume_aproximado: 1.277.948 linhas
+volume_aproximado: 1,3 milhão de linhas
 observacoes: |
-  Os nomes dos municípios devem ser buscados na API do IBGE, pois a tabela só contém o 
-  código do município (id_municipio).
-  Para acessar a API do IBGE, utilize o GET Disponível, substituindo {UF} pela sigla do 
-  Estado ou do Distrito Federal.
-  Endereço da API - https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
-   
-  
+  CADA MUNICÍPIO APARECE VÁRIAS VEZES POR ANO, uma por combinação de rede e
+  localização, incluindo linhas de total. Sempre fixe as duas, por exemplo
+  `rede = 'publica' AND localizacao = 'total'`, ou o resultado mistura linhas.
+  Os valores são minúsculos e sem acento: 'publica', 'total', 'urbana'.
+
+  Todas as taxas estão em percentual (0 a 100). Não some taxas, e evite média
+  simples entre municípios — para um total estadual, use a tabela por UF do
+  mesmo conjunto (`br_inep_indicadores_educacionais.uf`).
+
+  Não há coluna de UF: municípios de Pernambuco são os de `id_municipio`
+  começando com '26' (`SUBSTR(id_municipio, 1, 2) = '26'`). Nome do município:
+  una com `basedosdados.br_bd_diretorios_brasil.municipio`.
+
+  Siglas das colunas: ef = ensino fundamental; em = ensino médio;
+  ei = educação infantil; anos_iniciais = 1º ao 5º ano; anos_finais = 6º ao 9º.
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
-colunas: [
-  {nome: ano, descricao: Ano, tipo: INT64, particao: true},
-  {nome: id_municipio, descricao: ID Município - IBGE 7 Dígitos, tipo: STRING},
-  {nome: localizacao, descricao: Localização, tipo: STRING},
-  {nome: rede, descricao: Rede Escolar, tipo: STRING},
-  {nome: atu_ei, descricao: Média de Alunos por Turma - Educação Infantil, tipo: FLOAT64},
-  {nome: atu_ei_creche, descricao: Média de Alunos por Turma - Educação Infantil Creche, tipo: FLOAT64},
-  {nome: atu_ei_pre_escola, descricao: Média de Alunos por Turma - Educação Infantil Pré-escola, tipo: FLOAT64},
-  {nome: atu_ef, descricao: Média de Alunos por Turma - Ensino Fundamental, tipo: FLOAT64},
-  {nome: atu_ef_anos_iniciais, descricao: Média de Alunos por Turma - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: atu_ef_anos_finais, descricao: Média de Alunos por Turma - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: atu_ef_1_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: atu_ef_2_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: atu_ef_3_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: atu_ef_4_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: atu_ef_5_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: atu_ef_6_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: atu_ef_7_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: atu_ef_8_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: atu_ef_9_ano, descricao: Média de Alunos por Turma - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: atu_ef_turmas_unif_multi_fluxo, descricao: "Média de Alunos por Turma - Ensino Fundamental Turmas Unificadas, Multi, Multietapa e Correção de fluxo", tipo: FLOAT64},
-  {nome: atu_em, descricao: Média de Alunos por Turma - Ensino Médio, tipo: FLOAT64},
-  {nome: atu_em_1_ano, descricao: Média de Alunos por Turma - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: atu_em_2_ano, descricao: Média de Alunos por Turma - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: atu_em_3_ano, descricao: Média de Alunos por Turma - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: atu_em_4_ano, descricao: Média de Alunos por Turma - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: atu_em_nao_seriado, descricao: Média de Alunos por Turma - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: had_ei, descricao: Média de Horas-Aula diária - Educação Infantil, tipo: FLOAT64},
-  {nome: had_ei_creche, descricao: Média de Horas-Aula diária - Educação Infantil Creche, tipo: FLOAT64},
-  {nome: had_ei_pre_escola, descricao: Média de Horas-Aula diária - Educação Infantil Pré-escola, tipo: FLOAT64},
-  {nome: had_ef, descricao: Média de Horas-Aula diária - Ensino Fundamental, tipo: FLOAT64},
-  {nome: had_ef_anos_iniciais, descricao: Média de Horas-Aula diária - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: had_ef_anos_finais, descricao: Média de Horas-Aula diária - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: had_ef_1_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: had_ef_2_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: had_ef_3_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: had_ef_4_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: had_ef_5_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: had_ef_6_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: had_ef_7_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: had_ef_8_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: had_ef_9_ano, descricao: Média de Horas-Aula diária - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: had_em, descricao: Média de Horas-Aula diária - Ensino Médio, tipo: FLOAT64},
-  {nome: had_em_1_ano, descricao: Média de Horas-Aula diária - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: had_em_2_ano, descricao: Média de Horas-Aula diária - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: had_em_3_ano, descricao: Média de Horas-Aula diária - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: had_em_4_ano, descricao: Média de Horas-Aula diária - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: had_em_nao_seriado, descricao: Média de Horas-Aula diária - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: tdi_ef, descricao: Taxa de distorção idade-série - Ensino Fundamental, tipo: FLOAT64},
-  {nome: tdi_ef_anos_iniciais, descricao: Taxa de distorção idade-série - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: tdi_ef_anos_finais, descricao: Taxa de distorção idade-série - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: tdi_ef_1_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: tdi_ef_2_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: tdi_ef_3_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: tdi_ef_4_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: tdi_ef_5_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: tdi_ef_6_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: tdi_ef_7_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: tdi_ef_8_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: tdi_ef_9_ano, descricao: Taxa de distorção idade-série - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: tdi_em, descricao: Taxa de distorção idade-série - Ensino Médio, tipo: FLOAT64},
-  {nome: tdi_em_1_ano, descricao: Taxa de distorção idade-série - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: tdi_em_2_ano, descricao: Taxa de distorção idade-série - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: tdi_em_3_ano, descricao: Taxa de distorção idade-série - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: tdi_em_4_ano, descricao: Taxa de distorção idade-série - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef, descricao: Taxa de Aprovação - Ensino Fundamental, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_anos_iniciais, descricao: Taxa de Aprovação - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_anos_finais, descricao: Taxa de Aprovação - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_1_ano, descricao: Taxa de Aprovação - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_2_ano, descricao: Taxa de Aprovação - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_3_ano, descricao: Taxa de Aprovação - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_4_ano, descricao: Taxa de Aprovação - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_5_ano, descricao: Taxa de Aprovação - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_6_ano, descricao: Taxa de Aprovação - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_7_ano, descricao: Taxa de Aprovação - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_8_ano, descricao: Taxa de Aprovação - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_ef_9_ano, descricao: Taxa de Aprovação - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em, descricao: Taxa de Aprovação - Ensino Médio, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em_1_ano, descricao: Taxa de Aprovação - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em_2_ano, descricao: Taxa de Aprovação - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em_3_ano, descricao: Taxa de Aprovação - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em_4_ano, descricao: Taxa de Aprovação - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: taxa_aprovacao_em_nao_seriado, descricao: Taxa de Aprovação - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef, descricao: Taxa de Reprovação - Ensino Fundamental, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_anos_iniciais, descricao: Taxa de Reprovação - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_anos_finais, descricao: Taxa de Reprovação - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_1_ano, descricao: Taxa de Reprovação - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_2_ano, descricao: Taxa de Reprovação - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_3_ano, descricao: Taxa de Reprovação - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_4_ano, descricao: Taxa de Reprovação - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_5_ano, descricao: Taxa de Reprovação - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_6_ano, descricao: Taxa de Reprovação - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_7_ano, descricao: Taxa de Reprovação - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_8_ano, descricao: Taxa de Reprovação - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_ef_9_ano, descricao: Taxa de Reprovação - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em, descricao: Taxa de Reprovação - Ensino Médio, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em_1_ano, descricao: Taxa de Reprovação - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em_2_ano, descricao: Taxa de Reprovação - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em_3_ano, descricao: Taxa de Reprovação - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em_4_ano, descricao: Taxa de Reprovação - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: taxa_reprovacao_em_nao_seriado, descricao: Taxa de Reprovação - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: taxa_abandono_ef, descricao: Taxa de Abandono - Ensino Fundamental, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_anos_iniciais, descricao: Taxa de Abandono - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_anos_finais, descricao: Taxa de Abandono - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_1_ano, descricao: Taxa de Abandono - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_2_ano, descricao: Taxa de Abandono - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_3_ano, descricao: Taxa de Abandono - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_4_ano, descricao: Taxa de Abandono - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_5_ano, descricao: Taxa de Abandono - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_6_ano, descricao: Taxa de Abandono - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_7_ano, descricao: Taxa de Abandono - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_8_ano, descricao: Taxa de Abandono - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_ef_9_ano, descricao: Taxa de Abandono - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_em, descricao: Taxa de Abandono - Ensino Médio, tipo: FLOAT64},
-  {nome: taxa_abandono_em_1_ano, descricao: Taxa de Abandono - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_em_2_ano, descricao: Taxa de Abandono - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_em_3_ano, descricao: Taxa de Abandono - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_em_4_ano, descricao: Taxa de Abandono - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: taxa_abandono_em_nao_seriado, descricao: Taxa de Abandono - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: tnr_ef, descricao: Taxa de Não Resposta - Ensino Fundamental, tipo: FLOAT64},
-  {nome: tnr_ef_anos_iniciais, descricao: Taxa de Não Resposta - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: tnr_ef_anos_finais, descricao: Taxa de Não Resposta - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: tnr_ef_1_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 1º ano, tipo: FLOAT64},
-  {nome: tnr_ef_2_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 2º ano, tipo: FLOAT64},
-  {nome: tnr_ef_3_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 3º ano, tipo: FLOAT64},
-  {nome: tnr_ef_4_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 4º ano, tipo: FLOAT64},
-  {nome: tnr_ef_5_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 5º ano, tipo: FLOAT64},
-  {nome: tnr_ef_6_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 6º ano, tipo: FLOAT64},
-  {nome: tnr_ef_7_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 7º ano, tipo: FLOAT64},
-  {nome: tnr_ef_8_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 8º ano, tipo: FLOAT64},
-  {nome: tnr_ef_9_ano, descricao: Taxa de Não Resposta - Ensino Fundamental 9º ano, tipo: FLOAT64},
-  {nome: tnr_em, descricao: Taxa de Não Resposta - Ensino Médio, tipo: FLOAT64},
-  {nome: tnr_em_1_ano, descricao: Taxa de Não Resposta - Ensino Médio 1º ano, tipo: FLOAT64},
-  {nome: tnr_em_2_ano, descricao: Taxa de Não Resposta - Ensino Médio 2º ano, tipo: FLOAT64},
-  {nome: tnr_em_3_ano, descricao: Taxa de Não Resposta - Ensino Médio 3º ano, tipo: FLOAT64},
-  {nome: tnr_em_4_ano, descricao: Taxa de Não Resposta - Ensino Médio 4º ano, tipo: FLOAT64},
-  {nome: tnr_em_nao_seriado, descricao: Taxa de Não Resposta - Ensino Médio Não Seriado, tipo: FLOAT64},
-  {nome: dsu_ei, descricao: Percentual de Docentes com Curso Superior - Educação Infantil, tipo: FLOAT64},
-  {nome: dsu_ei_creche, descricao: Percentual de Docentes com Curso Superior - Educação Infantil Creche, tipo: FLOAT64},
-  {nome: dsu_ei_pre_escola, descricao: Percentual de Docentes com Curso Superior - Educação Infantil Pré-escola, tipo: FLOAT64},
-  {nome: dsu_ef, descricao: Percentual de Docentes com Curso Superior - Ensino Fundamental, tipo: FLOAT64},
-  {nome: dsu_ef_anos_iniciais, descricao: Percentual de Docentes com Curso Superior - Ensino Fundamental Anos Iniciais, tipo: FLOAT64},
-  {nome: dsu_ef_anos_finais, descricao: Percentual de Docentes com Curso Superior - Ensino Fundamental Anos Finais, tipo: FLOAT64},
-  {nome: dsu_em, descricao: Percentual de Docentes com Curso Superior - Ensino Médio, tipo: FLOAT64},
-  {nome: dsu_ep, descricao: Percentual de Docentes com Curso Superior - Educação Profissional, tipo: FLOAT64},
-  {nome: dsu_eja, descricao: Percentual de Docentes com Curso Superior - Educação de Jovens e Adultos, tipo: FLOAT64},
-  {nome: dsu_ee, descricao: Percentual de Docentes com Curso Superior - Educação Especial, tipo: FLOAT64},
-  {nome: afd_ei_grupo_1, descricao: Adequação da Formação Docente - Educação Infantil Grupo 1, tipo: FLOAT64},
-  {nome: afd_ei_grupo_2, descricao: Adequação da Formação Docente - Educação Infantil Grupo 2, tipo: FLOAT64},
-  {nome: afd_ei_grupo_3, descricao: Adequação da Formação Docente - Educação Infantil Grupo 3, tipo: FLOAT64},
-  {nome: afd_ei_grupo_4, descricao: Adequação da Formação Docente - Educação Infantil Grupo 4, tipo: FLOAT64},
-  {nome: afd_ei_grupo_5, descricao: Adequação da Formação Docente - Educação Infantil Grupo 5, tipo: FLOAT64},
-  {nome: afd_ef_grupo_1, descricao: Adequação da Formação Docente - Ensino Fundamental Grupo 1, tipo: FLOAT64},
-  {nome: afd_ef_grupo_2, descricao: Adequação da Formação Docente - Ensino Fundamental Grupo 2, tipo: FLOAT64},
-  {nome: afd_ef_grupo_3, descricao: Adequação da Formação Docente - Ensino Fundamental Grupo 3, tipo: FLOAT64},
-  {nome: afd_ef_grupo_4, descricao: Adequação da Formação Docente - Ensino Fundamental Grupo 4, tipo: FLOAT64},
-  {nome: afd_ef_grupo_5, descricao: Adequação da Formação Docente - Ensino Fundamental Grupo 5, tipo: FLOAT64},
-  {nome: afd_ef_anos_iniciais_grupo_1, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Iniciais Grupo 1, tipo: FLOAT64},
-  {nome: afd_ef_anos_iniciais_grupo_2, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Iniciais Grupo 2, tipo: FLOAT64},
-  {nome: afd_ef_anos_iniciais_grupo_3, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Iniciais Grupo 3, tipo: FLOAT64},
-  {nome: afd_ef_anos_iniciais_grupo_4, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Iniciais Grupo 4, tipo: FLOAT64},
-  {nome: afd_ef_anos_iniciais_grupo_5, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Iniciais Grupo 5, tipo: FLOAT64},
-  {nome: afd_ef_anos_finais_grupo_1, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Finais Grupo 1, tipo: FLOAT64},
-  {nome: afd_ef_anos_finais_grupo_2, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Finais Grupo 2, tipo: FLOAT64},
-  {nome: afd_ef_anos_finais_grupo_3, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Finais Grupo 3, tipo: FLOAT64},
-  {nome: afd_ef_anos_finais_grupo_4, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Finais Grupo 4, tipo: FLOAT64},
-  {nome: afd_ef_anos_finais_grupo_5, descricao: Adequação da Formação Docente - Ensino Fundamental Anos Finais Grupo 5, tipo: FLOAT64},
-  {nome: afd_em_grupo_1, descricao: Adequação da Formação Docente - Ensino Médio Grupo 1, tipo: FLOAT64},
-  {nome: afd_em_grupo_2, descricao: Adequação da Formação Docente - Ensino Médio Grupo 2, tipo: FLOAT64},
-  {nome: afd_em_grupo_3, descricao: Adequação da Formação Docente - Ensino Médio Grupo 3, tipo: FLOAT64},
-  {nome: afd_em_grupo_4, descricao: Adequação da Formação Docente - Ensino Médio Grupo 4, tipo: FLOAT64},
-  {nome: afd_em_grupo_5, descricao: Adequação da Formação Docente - Ensino Médio Grupo 5, tipo: FLOAT64},
-  {nome: afd_eja_fundamental_grupo_1, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Fundamental Grupo 1, tipo: FLOAT64},
-  {nome: afd_eja_fundamental_grupo_2, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Fundamental Grupo 2, tipo: FLOAT64},
-  {nome: afd_eja_fundamental_grupo_3, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Fundamental Grupo 3, tipo: FLOAT64},
-  {nome: afd_eja_fundamental_grupo_4, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Fundamental Grupo 4, tipo: FLOAT64},
-  {nome: afd_eja_fundamental_grupo_5, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Fundamental Grupo 5, tipo: FLOAT64},
-  {nome: afd_eja_medio_grupo_1, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Médio Grupo 1, tipo: FLOAT64},
-  {nome: afd_eja_medio_grupo_2, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Médio Grupo 2, tipo: FLOAT64},
-  {nome: afd_eja_medio_grupo_3, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Médio Grupo 3, tipo: FLOAT64},
-  {nome: afd_eja_medio_grupo_4, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Médio Grupo 4, tipo: FLOAT64},
-  {nome: afd_eja_medio_grupo_5, descricao: Adequação da Formação Docente - Educação de Jovens e Adultos - Ensino Médio Grupo 5, tipo: FLOAT64},
-  {nome: ird_baixa_regularidade, descricao: Regularidade do Corpo Docente - Baixa Regularidade, tipo: FLOAT64},
-  {nome: ird_media_baixa, descricao: Regularidade do Corpo Docente - Média a Baixa Regularidade, tipo: FLOAT64},
-  {nome: ird_media_alta, descricao: Regularidade do Corpo Docente - Média a Alta Regularidade, tipo: FLOAT64},
-  {nome: ird_alta, descricao: Regularidade do Corpo Docente - Alta Regularidade, tipo: FLOAT64},
-  {nome: ied_ef_nivel_1, descricao: Esforço Docente - Ensino Fundamental Nível 1, tipo: FLOAT64},
-  {nome: ied_ef_nivel_2, descricao: Esforço Docente - Ensino Fundamental Nível 2, tipo: FLOAT64},
-  {nome: ied_ef_nivel_3, descricao: Esforço Docente - Ensino Fundamental Nível 3, tipo: FLOAT64},
-  {nome: ied_ef_nivel_4, descricao: Esforço Docente - Ensino Fundamental Nível 4, tipo: FLOAT64},
-  {nome: ied_ef_nivel_5, descricao: Esforço Docente - Ensino Fundamental Nível 5, tipo: FLOAT64},
-  {nome: ied_ef_nivel_6, descricao: Esforço Docente - Ensino Fundamental Nível 6, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_1, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 1, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_2, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 2, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_3, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 3, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_4, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 4, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_5, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 5, tipo: FLOAT64},
-  {nome: ied_ef_anos_iniciais_nivel_6, descricao: Esforço Docente - Ensino Fundamental Anos Iniciais Nível 6, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_1, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 1, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_2, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 2, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_3, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 3, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_4, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 4, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_5, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 5, tipo: FLOAT64},
-  {nome: ied_ef_anos_finais_nivel_6, descricao: Esforço Docente - Ensino Fundamental Anos Finais Nível 6, tipo: FLOAT64},
-  {nome: ied_em_nivel_1, descricao: Esforço Docente - Ensino Médio Nível 1, tipo: FLOAT64},
-  {nome: ied_em_nivel_2, descricao: Esforço Docente - Ensino Médio Nível 2, tipo: FLOAT64},
-  {nome: ied_em_nivel_3, descricao: Esforço Docente - Ensino Médio Nível 3, tipo: FLOAT64},
-  {nome: ied_em_nivel_4, descricao: Esforço Docente - Ensino Médio Nível 4, tipo: FLOAT64},
-  {nome: ied_em_nivel_5, descricao: Esforço Docente - Ensino Médio Nível 5, tipo: FLOAT64},
-  {nome: ied_em_nivel_6, descricao: Esforço Docente - Ensino Médio Nível 6, tipo: FLOAT64},
-  {nome: icg_nivel_1, descricao: Complexidade de Gestão da Escola Nível 1, tipo: FLOAT64},
-  {nome: icg_nivel_2, descricao: Complexidade de Gestão da Escola Nível 2, tipo: FLOAT64},
-  {nome: icg_nivel_3, descricao: Complexidade de Gestão da Escola Nível 3, tipo: FLOAT64},
-  {nome: icg_nivel_4, descricao: Complexidade de Gestão da Escola Nível 4, tipo: FLOAT64},
-  {nome: icg_nivel_5, descricao: Complexidade de Gestão da Escola Nível 5, tipo: FLOAT64},
-  {nome: icg_nivel_6, descricao: Complexidade de Gestão da Escola Nível 6, tipo: FLOAT64}
-]
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência do indicador.
+    particao: true
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+    valores_exemplo: ["2600302", "2604106", "2611606"]
+    nota: Agrestina = 2600302; Caruaru = 2604106; Recife = 2611606. Pernambuco = começa com '26'.
+
+  - nome: rede
+    tipo: STRING
+    descricao: Rede de ensino a que o indicador se refere.
+    valores_exemplo: [total, publica, municipal, estadual, federal, privada]
+    nota: '"publica" soma federal, estadual e municipal. Filtre sempre uma rede.'
+
+  - nome: localizacao
+    tipo: STRING
+    descricao: Localização das escolas a que o indicador se refere.
+    valores_exemplo: [total, urbana, rural]
+    nota: Filtre sempre uma localização; use 'total' quando a pergunta não distinguir.
+
+  - nome: taxa_aprovacao_ef_anos_iniciais
+    tipo: FLOAT64
+    descricao: Taxa de aprovação nos anos iniciais do ensino fundamental (%).
+
+  - nome: taxa_aprovacao_ef_anos_finais
+    tipo: FLOAT64
+    descricao: Taxa de aprovação nos anos finais do ensino fundamental (%).
+
+  - nome: taxa_aprovacao_em
+    tipo: FLOAT64
+    descricao: Taxa de aprovação no ensino médio (%).
+
+  - nome: taxa_reprovacao_ef_anos_iniciais
+    tipo: FLOAT64
+    descricao: Taxa de reprovação nos anos iniciais do ensino fundamental (%).
+
+  - nome: taxa_reprovacao_ef_anos_finais
+    tipo: FLOAT64
+    descricao: Taxa de reprovação nos anos finais do ensino fundamental (%).
+
+  - nome: taxa_reprovacao_em
+    tipo: FLOAT64
+    descricao: Taxa de reprovação no ensino médio (%).
+
+  - nome: taxa_abandono_ef_anos_iniciais
+    tipo: FLOAT64
+    descricao: Taxa de abandono nos anos iniciais do ensino fundamental (%).
+
+  - nome: taxa_abandono_ef_anos_finais
+    tipo: FLOAT64
+    descricao: Taxa de abandono nos anos finais do ensino fundamental (%).
+
+  - nome: taxa_abandono_em
+    tipo: FLOAT64
+    descricao: Taxa de abandono no ensino médio (%).
+
+  - nome: tdi_ef_anos_iniciais
+    tipo: FLOAT64
+    descricao: Taxa de distorção idade-série nos anos iniciais do fundamental — % de alunos com 2 ou mais anos de atraso.
+
+  - nome: tdi_ef_anos_finais
+    tipo: FLOAT64
+    descricao: Taxa de distorção idade-série nos anos finais do fundamental — % de alunos com 2 ou mais anos de atraso.
+
+  - nome: tdi_em
+    tipo: FLOAT64
+    descricao: Taxa de distorção idade-série no ensino médio — % de alunos com 2 ou mais anos de atraso.
+
+  - nome: atu_ei
+    tipo: FLOAT64
+    descricao: Média de alunos por turma na educação infantil.
+
+  - nome: atu_ef_anos_iniciais
+    tipo: FLOAT64
+    descricao: Média de alunos por turma nos anos iniciais do ensino fundamental.
+
+  - nome: atu_ef_anos_finais
+    tipo: FLOAT64
+    descricao: Média de alunos por turma nos anos finais do ensino fundamental.
+
+  - nome: atu_em
+    tipo: FLOAT64
+    descricao: Média de alunos por turma no ensino médio.
+
+  - nome: had_ef
+    tipo: FLOAT64
+    descricao: Média de horas-aula diárias no ensino fundamental.
+
+  - nome: had_em
+    tipo: FLOAT64
+    descricao: Média de horas-aula diárias no ensino médio.
+
+  - nome: dsu_ef
+    tipo: FLOAT64
+    descricao: Percentual de docentes com curso superior no ensino fundamental.
+
+  - nome: dsu_em
+    tipo: FLOAT64
+    descricao: Percentual de docentes com curso superior no ensino médio.
+
+  - nome: afd_ef_anos_finais_grupo_1
+    tipo: FLOAT64
+    descricao: Percentual de docentes dos anos finais com formação adequada à disciplina que lecionam (grupo 1 do indicador AFD).
+
+  - nome: afd_em_grupo_1
+    tipo: FLOAT64
+    descricao: Percentual de docentes do ensino médio com formação adequada à disciplina que lecionam (grupo 1 do indicador AFD).
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
 consultas_exemplo:
-  - pergunta: Qual a taxa de distorção idade-série nos anos finais do ensino fundamental público do município de Agrestina/PE em 2024?
+  - pergunta: Qual a taxa de distorção idade-série nos anos finais do ensino fundamental público de Agrestina/PE em 2024?
     sql: |
-      SELECT
-        tdi_ef_anos_finais
+      SELECT tdi_ef_anos_finais
       FROM `basedosdados.br_inep_indicadores_educacionais.municipio`
-      WHERE
-        ano = 2024
+      WHERE ano = 2024
         AND id_municipio = '2600302'
-        AND rede = 'Pública'
-        AND localizacao = 'Total'
+        AND rede = 'publica'
+        AND localizacao = 'total'
 
-  - pergunta: Qual a taxa de aprovação dos anos iniciais do ensino fundamental público no município de Caruaru/PE em 2024?
+  - pergunta: Como evoluiu a taxa de abandono no ensino médio público de Caruaru/PE entre 2019 e 2024?
     sql: |
-      SELECT
-        taxa_aprovacao_ef_anos_iniciais,
-        localizacao
+      SELECT ano, taxa_abandono_em
       FROM `basedosdados.br_inep_indicadores_educacionais.municipio`
-      WHERE
-        ano = 2024
+      WHERE ano BETWEEN 2019 AND 2024
         AND id_municipio = '2604106'
-        AND rede = 'Pública'
+        AND rede = 'publica'
+        AND localizacao = 'total'
+      ORDER BY ano
 
-  - pergunta: Qual foi o crescimento da taxa de abandono no ensino médio público no município de Caruaru/PE entre 2020 e 2024?
+  - pergunta: Quais os 10 municípios de Pernambuco com maior taxa de reprovação nos anos finais da rede municipal em 2024?
     sql: |
-      SELECT
-        taxa_abandono_em,
-        localizacao
-      FROM `basedosdados.br_inep_indicadores_educacionais.municipio`
-      WHERE
-        ano IN (2020, 2021, 2022, 2024)
-        AND id_municipio = '2604106'
-        AND rede = 'Pública'
+      SELECT mun.nome AS municipio, ind.taxa_reprovacao_ef_anos_finais
+      FROM `basedosdados.br_inep_indicadores_educacionais.municipio` AS ind
+      LEFT JOIN `basedosdados.br_bd_diretorios_brasil.municipio` AS mun
+        ON ind.id_municipio = mun.id_municipio
+      WHERE ind.ano = 2024
+        AND SUBSTR(ind.id_municipio, 1, 2) = '26'
+        AND ind.rede = 'municipal'
+        AND ind.localizacao = 'total'
+        AND ind.taxa_reprovacao_ef_anos_finais IS NOT NULL
+      ORDER BY ind.taxa_reprovacao_ef_anos_finais DESC
+      LIMIT 10

@@ -1,12 +1,10 @@
-# GABARITO — preencha e troque `status` para `ativo`.
+# Revisado com os metadados oficiais da Base dos Dados (API pública e tabela
+# br_me_caged.dicionario), consultados em 13/10/2026.
 #
 # O formato completo, campo a campo, está em `catalog/_schema.yaml`.
-# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
-# Dados antes de ativar: eles são o que vai no FROM da consulta.
-#
 # Depois de editar:  make validar-catalogo
 
-# ─── CAGED - MICRODADOS - MOVIMENTAÇÃO ────────────────────────────────────────────────
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
 id: br_me_caged__microdados_movimentacao
 dataset_id: br_me_caged
 table_id: microdados_movimentacao
@@ -19,172 +17,254 @@ status: rascunho
 # ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
 #     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
 resumo: >
-  Contém dados de movimentações de emprego (admissões e desligamentos) declaradas dentro do prazo de competência de declaração. 
-  As declarações são enviadas pelos empregadores (então são somente empregos formais, ou seja, não inclui empregos informais).
-  Pode ser usada para conhecer as movimentações de emprego por setor (CNAE), ocupação, grau de instrução do trabalhador, horas trabalhadas, município, sexo, faixa etária, faixa salarial, escolaridade, tipo de empregador e tipo de deficiência do trabalhador.
+  Admissões e desligamentos de empregos formais (carteira assinada) no Brasil
+  desde 2020, declarados pelos empregadores ao Novo Caged do Ministério do
+  Trabalho. Cada linha é uma movimentação de um trabalhador, com município,
+  setor econômico (CNAE), ocupação (CBO), salário, sexo, idade, raça/cor e
+  escolaridade. Responde perguntas sobre geração de empregos, saldo de vagas,
+  salários de admissão e perfil de quem é contratado ou demitido. Para o saldo
+  oficial, some com as tabelas de declarações fora do prazo e excluídas.
 
-palavras_chave: [emprego, caged, salário, trabalho, mercado de trabalho, admissões, demissões, ocupação]
+palavras_chave: [emprego, desemprego, Caged, carteira assinada, admissões, demissões, desligamentos, saldo de empregos, vagas, salário, mercado de trabalho, ocupação, setor econômico]
 
 perguntas_exemplo:
-  - "Quantos trabalhadores foram admitidos e demitidos no setor industrial por município de Pernambuco em 2025?"
-  - "Qual a faixa salarial média dos trabalhadores admitidos em Pernambuco em 2025 por ocupação e por município?"
-  - "Qual o saldo de admissões e desligamentos por faixa etária e sexo em Pernambuco entre 2022 e 2025?"
+  - "Qual foi o saldo de empregos formais em Pernambuco em cada mês de 2025?"
+  - "Quais setores mais geraram empregos no Recife em 2025?"
+  - "Qual o salário médio de admissão de homens e mulheres em Pernambuco em 2025?"
 
 # ─── CARACTERÍSTICAS ──────────────────────────────────────────────
-grao: uma linha por tipo de movimentação, CNAE, mês, ano, UF, município, tipo de estabelecimento, CBO (Classificação Brasileira de Ocupações) e quantidade de movimentações.
+grao: Uma linha por movimentação (admissão ou desligamento) de um trabalhador, declarada dentro do prazo.
 cobertura_temporal: { inicio: 2020, fim: 2026 }
-cobertura_geografica: Estado (UF) e município
+cobertura_geografica: Brasil, por UF e município do estabelecimento
 # Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
 # aqui precisa existir em `colunas` com `particao: true`.
-particoes: [mes,ano,sigla_uf]
+particoes: [ano, mes, sigla_uf]
 sem_particao: false
-volume_aproximado: 279.586.654 linhas
+volume_aproximado: 288,5 milhões de linhas
 observacoes: |
-  Só é possível trazer dados corretos se vier unida com as tabelas de movimentações fora do prazo e de 
-  movimentações excluídas, que estão em outras tabelas do mesmo dataset 
-  (br_me_caged.microdados_movimentacao_fora_prazo e br_me_caged.microdados_movimentacao_excluida).
+  SALDO OFICIAL: esta tabela sozinha não fecha com os números do Ministério.
+  O saldo de um mês de competência = movimentações desta tabela
+  + as de `microdados_movimentacao_fora_prazo` com aquela competência
+  − as de `microdados_movimentacao_excluida` com aquela competência.
+  Nas duas outras, a competência está em `ano_competencia_movimentacao` e
+  `mes_competencia_movimentacao`. Una as três listando as colunas pelo nome —
+  `SELECT *` com UNION ALL junta por posição e desalinha as colunas.
+
+  Os códigos do Caged são próprios e diferem de outras bases: sexo 3 = Mulher;
+  raça/cor 3 = Parda (veja `nota` de cada coluna).
+
+  Nome do município: una com `basedosdados.br_bd_diretorios_brasil.municipio`
+  pela coluna `id_municipio`.
 
 # ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
 colunas:
-
   - nome: ano
     tipo: INT64
-    descricao: Ano
+    descricao: Ano de competência da movimentação.
     particao: true
 
   - nome: mes
     tipo: INT64
-    descricao: Mês
+    descricao: Mês de competência da movimentação (1 a 12).
     particao: true
 
   - nome: sigla_uf
     tipo: STRING
-    descricao: Sigla da Unidade da Federação
+    descricao: Sigla da Unidade da Federação do estabelecimento.
     particao: true
+    valores_exemplo: [PE, AL, PB, BA, SP]
 
   - nome: id_municipio
     tipo: STRING
-    descricao: ID Município - IBGE 7 Dígitos
-
-  - nome: cnae_2_secao
-    tipo: STRING
-    descricao: Classificação Nacional de Atividades Econômicas (CNAE 2.0 - Seção)
-
-  - nome: cnae_2_subclasse
-    tipo: STRING
-    descricao: Subclasse do Código Nacional de Atividades Econômicas 2.0
+    descricao: Código IBGE de 7 dígitos do município do estabelecimento.
+    valores_exemplo: ["2611606", "2604106", "2607901"]
+    nota: Recife = 2611606; Caruaru = 2604106; Jaboatão dos Guararapes = 2607901.
 
   - nome: saldo_movimentacao
     tipo: INT64
-    descricao: Saldo de movimentação
-
-  - nome: cbo_2002
-    tipo: STRING
-    descricao: Classificação Brasileira de Ocupações (CBO) - 2002
-
-  - nome: categoria
-    tipo: STRING
-    descricao: Categoria de trabalhador
-
-  - nome: grau_instrucao
-    tipo: STRING
-    descricao: Grau de instrução ou escolaridade
-
-  - nome: idade
-    tipo: INT64
-    descricao: Idade do trabalhador
-
-  - nome: horas_contratuais
-    tipo: INT64
-    descricao: Horas contratuais
-
-  - nome: raca_cor
-    tipo: STRING
-    descricao: Raça ou Cor do Trabalhador
-
-  - nome: sexo
-    tipo: STRING
-    descricao: Sexo
-
-  - nome: tipo_empregador
-    tipo: STRING
-    descricao: Tipo de empregador
-
-  - nome: tipo_estabelecimento
-    tipo: STRING
-    descricao: Tipo de estabelecimento
+    descricao: Sentido da movimentação.
+    valores_exemplo: ["1", "-1"]
+    nota: 1 = Admissão; -1 = Desligamento. SUM(saldo_movimentacao) dá o saldo de empregos.
 
   - nome: tipo_movimentacao
     tipo: STRING
-    descricao: Tipo de movimentação
+    descricao: Motivo detalhado da admissão ou do desligamento.
+    valores_exemplo: ["10", "20", "31", "40", "90"]
+    nota: >-
+      10 = Primeiro emprego; 20 = Reemprego; 25 = Contrato por prazo determinado;
+      35 = Reintegração; 70 = Transferência (admissão); 31 = Demissão sem justa causa;
+      32 = Demissão com justa causa; 40 = A pedido; 43 e 45 = Término de contrato;
+      50 = Aposentadoria; 60 = Morte; 80 = Transferência (desligamento);
+      90 = Acordo entre empregado e empregador; 99 = Não identificado.
 
-  - nome: tipo_deficiencia
+  - nome: cnae_2_secao
     tipo: STRING
-    descricao: Tipo de deficiência/Beneficiário habilitado
+    descricao: Seção da atividade econômica do estabelecimento (CNAE 2.0), uma letra de A a U.
+    valores_exemplo: [C, F, G, I, P, Q]
+    nota: >-
+      C = Indústrias de transformação; F = Construção; G = Comércio; I = Alojamento e
+      alimentação; O = Administração pública; P = Educação; Q = Saúde humana e serviços sociais.
 
-  - nome: indicador_trabalho_intermitente
+  - nome: cnae_2_subclasse
     tipo: STRING
-    descricao: Indicador de trabalhador intermitente
+    descricao: Subclasse da atividade econômica (CNAE 2.0), código de 7 dígitos.
 
-  - nome: indicador_trabalho_parcial
+  - nome: cbo_2002
     tipo: STRING
-    descricao: Indicador de movimentação referente a contrato parcial
+    descricao: Ocupação do trabalhador na Classificação Brasileira de Ocupações (CBO 2002), 6 dígitos.
+
+  - nome: categoria
+    tipo: STRING
+    descricao: Categoria do vínculo de trabalho.
+    valores_exemplo: ["101", "103", "104", "111"]
+    nota: 101 = Empregado geral (CLT); 103 = Aprendiz; 104 = Doméstico; 106 = Temporário; 111 = Intermitente; 999 = Não identificado.
 
   - nome: salario_mensal
     tipo: FLOAT64
-    descricao: Salário mensal em moeda corrente
+    descricao: Salário mensal contratual, em reais correntes.
+    nota: Há valores extremos e zerados; para média, prefira a mediana (APPROX_QUANTILES) ou exclua salário zero.
+
+  - nome: horas_contratuais
+    tipo: INT64
+    descricao: Horas semanais previstas no contrato.
+
+  - nome: sexo
+    tipo: STRING
+    descricao: Sexo do trabalhador.
+    valores_exemplo: ["1", "3", "9"]
+    nota: 1 = Homem; 3 = Mulher; 9 = Não identificado. Atenção, Mulher é 3, não 2.
+
+  - nome: idade
+    tipo: INT64
+    descricao: Idade do trabalhador, em anos.
+
+  - nome: raca_cor
+    tipo: STRING
+    descricao: Raça ou cor do trabalhador.
+    valores_exemplo: ["1", "2", "3", "4", "5", "6", "9"]
+    nota: 1 = Branca; 2 = Preta; 3 = Parda; 4 = Amarela; 5 = Indígena; 6 = Não informada; 9 = Não identificado.
+
+  - nome: grau_instrucao
+    tipo: STRING
+    descricao: Escolaridade do trabalhador.
+    valores_exemplo: ["1", "5", "7", "9"]
+    nota: >-
+      1 = Analfabeto; 2 = Até 5º ano incompleto; 3 = 5º ano completo; 4 = 6º ao 9º ano;
+      5 = Fundamental completo; 6 = Médio incompleto; 7 = Médio completo;
+      8 = Superior incompleto; 9 = Superior completo; 10 = Mestrado; 11 = Doutorado;
+      80 = Pós-graduação completa; 99 = Não identificado.
+
+  - nome: tipo_deficiencia
+    tipo: STRING
+    descricao: Tipo de deficiência do trabalhador (ou beneficiário reabilitado).
+    valores_exemplo: ["0", "1", "2", "3", "4", "5", "6"]
+    nota: 0 = Não deficiente; 1 = Física; 2 = Auditiva; 3 = Visual; 4 = Intelectual; 5 = Múltipla; 6 = Reabilitado; 9 = Não identificado.
+
+  - nome: tipo_empregador
+    tipo: STRING
+    descricao: Tipo de inscrição do empregador.
+    valores_exemplo: ["0", "2"]
+    nota: 0 = CNPJ (empresa); 2 = CPF (pessoa física); 9 = Não identificado.
+
+  - nome: tipo_estabelecimento
+    tipo: STRING
+    descricao: Tipo de inscrição do estabelecimento.
+    valores_exemplo: ["1", "3", "4"]
+    nota: 1 = CNPJ; 3 = CAEPF (pessoa física com atividade econômica); 4 = CNO (obra); 5 = CEI; 9 = Não identificado.
 
   - nome: tamanho_estabelecimento_janeiro
     tipo: STRING
-    descricao: Faixa de tamanho do estabelecimento em relação ao total de vínculos no início do ano
+    descricao: Faixa de tamanho do estabelecimento pelo número de vínculos em janeiro.
+    valores_exemplo: ["2", "5", "7", "10"]
+    nota: >-
+      1 = Nenhum vínculo; 2 = 1 a 4; 3 = 5 a 9; 4 = 10 a 19; 5 = 20 a 49; 6 = 50 a 99;
+      7 = 100 a 249; 8 = 250 a 499; 9 = 500 a 999; 10 = 1.000 ou mais; 99 = Não identificado.
 
   - nome: indicador_aprendiz
     tipo: STRING
-    descricao: Indicador de trabalhador aprendiz
+    descricao: Indica se o trabalhador é aprendiz.
+    valores_exemplo: ["0", "1"]
+    nota: 0 = Não; 1 = Sim; 9 = Não identificado.
 
-  - nome: origem_informacao
+  - nome: indicador_trabalho_intermitente
     tipo: STRING
-    descricao: Origem da Informação
+    descricao: Indica se o contrato é de trabalho intermitente.
+    valores_exemplo: ["0", "1"]
+    nota: 0 = Não; 1 = Sim; 9 = Não identificado.
+
+  - nome: indicador_trabalho_parcial
+    tipo: STRING
+    descricao: Indica se o contrato é de tempo parcial.
+    valores_exemplo: ["0", "1"]
+    nota: 0 = Não; 1 = Sim; 9 = Não identificado.
 
   - nome: indicador_fora_prazo
     tipo: INT64
-    descricao: Indicador fora do prazo
+    descricao: Indica se a movimentação foi declarada fora do prazo.
+
+  - nome: origem_informacao
+    tipo: STRING
+    descricao: Sistema de origem da declaração (eSocial ou Caged).
 
 # ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
 consultas_exemplo:
-  - pergunta: Saldo de admissões e desligamentos em São Paulo em janeiro de 2025.
+  - pergunta: Qual foi o saldo de empregos formais em Pernambuco em cada mês de 2025?
     sql: |
-      WITH tabelas_unidas AS (
-        SELECT *, 0 AS indicador_exclusao
+      WITH movimentacoes AS (
+        SELECT mes, saldo_movimentacao, 1 AS peso
         FROM `basedosdados.br_me_caged.microdados_movimentacao`
+        WHERE sigla_uf = 'PE' AND ano = 2025 AND mes BETWEEN 1 AND 12
         UNION ALL
-        SELECT * EXCEPT (ano, mes), 0 AS indicador_exclusao
+        SELECT mes_competencia_movimentacao, saldo_movimentacao, 1 AS peso
         FROM `basedosdados.br_me_caged.microdados_movimentacao_fora_prazo`
+        WHERE sigla_uf = 'PE' AND ano >= 2025 AND ano_competencia_movimentacao = 2025
         UNION ALL
-        SELECT * EXCEPT (ano, mes, ano_declaracao_movimentacao, mes_declaracao_movimentacao, indicador_exclusao), 1 AS indicador_exclusao
+        SELECT mes_competencia_movimentacao, saldo_movimentacao, -1 AS peso
         FROM `basedosdados.br_me_caged.microdados_movimentacao_excluida`
-      ),
-
-      tabela_ajustada AS (
-        SELECT *,
-          CASE
-            WHEN saldo_movimentacao = 1 THEN 'admissão'
-            WHEN saldo_movimentacao = -1 THEN 'desligamento'
-          END AS admissao_desligamento,
-          CASE
-            WHEN indicador_exclusao = 0 THEN saldo_movimentacao
-            WHEN indicador_exclusao = 1 THEN -saldo_movimentacao
-          END AS saldo_movimentacao_ajustado
-        FROM tabelas_unidas
+        WHERE sigla_uf = 'PE' AND ano >= 2025 AND ano_competencia_movimentacao = 2025
       )
-
       SELECT
-        ano,
         mes,
-        SUM(IF(admissao_desligamento = 'admissão', saldo_movimentacao_ajustado, 0)) AS qte_admissoes,
-        SUM(IF(admissao_desligamento = 'desligamento', saldo_movimentacao_ajustado, 0)) AS qte_desligamentos,
-        SUM(saldo_movimentacao_ajustado) AS saldo
-      FROM tabela_ajustada
-      WHERE sigla_uf = 'SP' AND ano = 2025 AND mes = 1
-      GROUP BY 1, 2
-      ORDER BY ano, mes
+        SUM(IF(saldo_movimentacao = 1, peso, 0)) AS admissoes,
+        SUM(IF(saldo_movimentacao = -1, peso, 0)) AS desligamentos,
+        SUM(saldo_movimentacao * peso) AS saldo
+      FROM movimentacoes
+      GROUP BY mes
+      ORDER BY mes
+
+  - pergunta: Quais setores mais geraram empregos no Recife em 2025?
+    sql: |
+      WITH movimentacoes AS (
+        SELECT cnae_2_secao, saldo_movimentacao, 1 AS peso
+        FROM `basedosdados.br_me_caged.microdados_movimentacao`
+        WHERE sigla_uf = 'PE' AND ano = 2025 AND mes BETWEEN 1 AND 12
+          AND id_municipio = '2611606'
+        UNION ALL
+        SELECT cnae_2_secao, saldo_movimentacao, 1 AS peso
+        FROM `basedosdados.br_me_caged.microdados_movimentacao_fora_prazo`
+        WHERE sigla_uf = 'PE' AND ano >= 2025 AND ano_competencia_movimentacao = 2025
+          AND id_municipio = '2611606'
+        UNION ALL
+        SELECT cnae_2_secao, saldo_movimentacao, -1 AS peso
+        FROM `basedosdados.br_me_caged.microdados_movimentacao_excluida`
+        WHERE sigla_uf = 'PE' AND ano >= 2025 AND ano_competencia_movimentacao = 2025
+          AND id_municipio = '2611606'
+      )
+      SELECT cnae_2_secao AS secao_cnae, SUM(saldo_movimentacao * peso) AS saldo
+      FROM movimentacoes
+      GROUP BY secao_cnae
+      ORDER BY saldo DESC
+
+  - pergunta: Qual o salário mediano de admissão de homens e mulheres em Pernambuco em 2025?
+    sql: |
+      SELECT
+        CASE sexo WHEN '1' THEN 'Homem' WHEN '3' THEN 'Mulher' ELSE 'Não identificado' END AS sexo,
+        COUNT(*) AS admissoes,
+        APPROX_QUANTILES(salario_mensal, 2)[OFFSET(1)] AS salario_mediano
+      FROM `basedosdados.br_me_caged.microdados_movimentacao`
+      WHERE sigla_uf = 'PE'
+        AND ano = 2025
+        AND mes BETWEEN 1 AND 12
+        AND saldo_movimentacao = 1
+        AND salario_mensal > 0
+      GROUP BY sexo
