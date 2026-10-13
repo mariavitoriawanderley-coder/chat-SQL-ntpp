@@ -1,0 +1,7 @@
+# Só para desenvolvimento e CI. Não entra na imagem Docker.
+-r requirements.txt
+
+pytest==9.1.1
+# httpx2, não httpx: é o cliente que o TestClient do Starlette 1.6 usa.
+httpx2==2.10.0
+ruff==0.16.3

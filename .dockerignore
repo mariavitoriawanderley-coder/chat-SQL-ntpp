@@ -1,0 +1,30 @@
+# Tudo que não precisa entrar no contexto de build. Contexto menor,
+# build mais rápido e menos chance de vazar segredo para dentro da imagem.
+
+.git/
+.gitignore
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Nunca. O Cloud Run injeta as variáveis; segredo vai no Secret Manager.
+.env
+.env.*
+!.env.example
+
+web/node_modules/
+web/dist/
+static/
+
+modelos/
+claude_code/
+tests/
+*.md
+!README.md
+Makefile
+.dockerignore
+Dockerfile

@@ -1,0 +1,730 @@
+# GERADO A PARTIR DA PLANILHA — não edite à mão.
+#
+# Fonte:      dados/temas_comissoes_alepe.xlsx
+# Atualizar:  .venv/Scripts/python -m app.cli importar-temas
+#
+# Diz, para cada tema de cada comissão, em quais conjuntos de dados da Base dos
+# Dados procurar. Tema com `conjuntos: []` ainda não tem fonte mapeada.
+
+comissoes:
+- sigla: CAP
+  nome: Administração Pública
+  temas:
+  - nome: Transparência e acesso à informação
+    conjuntos:
+    - nome: Painel Lei de Acesso à Informação (LAI)
+      url: https://basedosdados.org/dataset/35b820fe-71ec-4d55-8d46-5985caccc9d1
+    - nome: Diário Oficial do Estado de Pernambuco
+      url: https://basedosdados.org/dataset/63b72b91-74dc-417a-b3dd-91a1d410bf0d
+  - nome: Servidores públicos estaduais
+    conjuntos: []
+  - nome: Previdência dos servidores
+    conjuntos:
+    - nome: Estatísticas da Previdência Social
+      url: https://basedosdados.org/dataset/fb61b727-1ec8-4a96-8b60-8146fd5b8ea8
+  - nome: Compras e contratações públicas
+    conjuntos:
+    - nome: PNCP - Portal Nacional de Contratações Públicas
+      url: https://basedosdados.org/dataset/81d89c04-120e-4b7d-aae0-41428f199811
+    - nome: Compras Públicas
+      url: https://basedosdados.org/dataset/575420d8-dcf3-496a-9e69-38b25d7c0b9d
+    - nome: Licitação e Contrato
+      url: https://basedosdados.org/dataset/bb11d3e6-6bac-412e-bbb8-773369771a70
+  - nome: Controle externo e auditorias
+    conjuntos:
+    - nome: Sanções
+      url: https://basedosdados.org/dataset/cab78c26-72df-4e0a-be83-c0a0d2126da2
+    - nome: Improbidade Administrativa (CNJ)
+      url: https://basedosdados.org/dataset/3e04cee2-b59c-411d-82e7-bdadc307cb7e
+  - nome: Planejamento e ações de governo
+    conjuntos:
+    - nome: Orçamento Público
+      url: https://basedosdados.org/dataset/65dd99e9-42d6-44f1-ab1c-6560cd16dde8
+    - nome: Despesas Públicas
+      url: https://basedosdados.org/dataset/ef31c5c6-452f-4eaa-8d61-128b45e65823
+    - nome: Execução Orçamentária
+      url: https://basedosdados.org/dataset/00f27f07-b57e-4e19-bfce-14f0c34cba2b
+  - nome: Serviços públicos delegados e regulação
+    conjuntos: []
+  - nome: Governo digital
+    conjuntos:
+    - nome: TIC Governo Eletrônico
+      url: https://basedosdados.org/dataset/f04dd15e-c018-48bf-898b-2aab41e061bc
+- sigla: CAM
+  nome: Assuntos Municipais
+  temas:
+  - nome: Perfil da gestão municipal
+    conjuntos:
+    - nome: MUNIC (Pesquisa de Informações Básicas Municipais)
+      url: https://basedosdados.org/dataset/218ae306-29ac-4a83-836d-95bfdb9683fe
+    - nome: ESTADIC (Pesquisa de Informações Básicas Estaduais)
+      url: https://basedosdados.org/dataset/453b23e9-1251-4b84-9d0c-1b7bbe2b3228
+  - nome: Finanças municipais
+    conjuntos:
+    - nome: SICONFI
+      url: https://basedosdados.org/dataset/5a3dec52-8740-460e-b31d-0e0347979da0
+    - nome: IFGF - Índice FIRJAN de Gestão Fiscal
+      url: https://basedosdados.org/dataset/097a386a-8b17-498e-8a96-13feaa218fcb
+    - nome: Capacidade de Pagamento (CAPAG) de Estados e Municípios
+      url: https://basedosdados.org/dataset/d239b68c-7c12-4ba6-b4c5-bfa92c5133b9
+  - nome: Repasses e transferências aos municípios
+    conjuntos:
+    - nome: Transferências a Estados e Municípios
+      url: https://basedosdados.org/dataset/46ef3078-c66f-464e-ab52-31ee6abe8665
+    - nome: Participações Governamentais (Royalties de Petróleo e Gás Natural)
+      url: https://basedosdados.org/dataset/71216744-e64a-40a5-9648-0ed0a2bd30b1
+  - nome: Convênios e transferências voluntárias
+    conjuntos:
+    - nome: SICONV (Convênios)
+      url: https://basedosdados.org/dataset/75e039e3-48ff-40b1-93fa-680d9132431b
+  - nome: Desempenho da gestão municipal
+    conjuntos:
+    - nome: IEGM - Índice de Efetividade da Gestão Municipal
+      url: https://basedosdados.org/dataset/aa3ab348-3184-4baa-a0f9-e90465854e0e
+  - nome: População e estimativas
+    conjuntos:
+    - nome: Censo Demográfico 2022
+      url: https://basedosdados.org/dataset/08a1546e-251f-4546-9fe0-b1e6ab2b203d
+    - nome: Censo Demográfico
+      url: https://basedosdados.org/dataset/b8e8bd62-4eb9-42f9-9ffa-b5cca093f58e
+  - nome: Divisão territorial e Regiões de Desenvolvimento
+    conjuntos:
+    - nome: Malha Municipal
+      url: https://basedosdados.org/dataset/186ef477-1b72-4cdb-bf03-0852dc10ec26
+    - nome: Códigos dos Municípios IBGE
+      url: https://basedosdados.org/dataset/1fc937d9-a774-4ce0-8f23-02cb04de67cd
+    - nome: Mapas do Brasil (geobr)
+      url: https://basedosdados.org/dataset/49ace9c8-ae2d-454b-bed9-9b9492a3a642
+  - nome: Região Metropolitana
+    conjuntos:
+    - nome: Mapas do Brasil (geobr)
+      url: https://basedosdados.org/dataset/49ace9c8-ae2d-454b-bed9-9b9492a3a642
+- sigla: CECEL
+  nome: Educação, Cultura, Esporte e Lazer
+  temas:
+  - nome: Educação básica
+    conjuntos:
+    - nome: Censo Escolar
+      url: https://basedosdados.org/dataset/dae21af4-4b6a-42f4-b94a-4c2061ea9de5
+    - nome: Sinopse Estatística da Educação Básica
+      url: https://basedosdados.org/dataset/386927a4-4ee8-4975-8ff3-beece3474942
+    - nome: Catálogo de Escolas
+      url: https://basedosdados.org/dataset/c320e0ad-7551-4c01-8bbd-39a59b1c4914
+    - nome: Dados da Educação Brasileira
+      url: https://basedosdados.org/dataset/a7e8bd57-08d8-402b-906f-5c43cfab13f5
+    - nome: Formação Docente
+      url: https://basedosdados.org/dataset/aabcf834-3b65-408e-9bad-b0fdf8ba2d3e
+  - nome: Aprendizagem e qualidade do ensino
+    conjuntos:
+    - nome: IDEB
+      url: https://basedosdados.org/dataset/96eab476-5d30-459b-82be-f888d4d0d6b9
+    - nome: Saeb
+      url: https://basedosdados.org/dataset/e083c9a2-1cee-4342-bedc-535cbad6f3cd
+    - nome: Classificação Saeb
+      url: https://basedosdados.org/dataset/ba72adc6-f81b-4262-8530-e7d1fe22b7f1
+    - nome: ENEM
+      url: https://basedosdados.org/dataset/3e9c8804-c31c-4f48-9a45-d67f1c21a859
+    - nome: Indicador de Diferença entre os Desempenhos Observado e Esperado (IDD)
+      url: https://basedosdados.org/dataset/d3e65b38-2533-4cc1-ba6d-a33de2c1882a
+  - nome: Evasão e fluxo escolar
+    conjuntos:
+    - nome: Fluxo Escolar
+      url: https://basedosdados.org/dataset/6afcbdcb-5f30-477c-bd0f-c6a002e464df
+    - nome: Indicadores Educacionais
+      url: https://basedosdados.org/dataset/63f1218f-c446-4835-b746-f109a338e3a1
+    nota: SP???
+  - nome: Alfabetização
+    conjuntos:
+    - nome: Avaliação da Alfabetização (INEP)
+      url: https://basedosdados.org/dataset/073a39d4-89cf-4068-b1e8-34ed0d9c0b72
+    - nome: Avaliação Nacional da Alfabetização (ANA)
+      url: https://basedosdados.org/dataset/140554cd-8062-4c9c-80fa-363cee3603e3
+  - nome: Ensino superior e pós-graduação
+    conjuntos:
+    - nome: Censo da Educação Superior
+      url: https://basedosdados.org/dataset/a3b57cca-ff80-4bf2-8bac-c145109e06a7
+    - nome: Sinopses Estatísticas da Educação Superior
+      url: https://basedosdados.org/dataset/a7e976f0-58cb-4bf6-beea-6b4be1caed14
+    - nome: SISU
+      url: https://basedosdados.org/dataset/8326e3d7-9cd2-4144-863f-c380fefef82c
+    - nome: ProUni
+      url: https://basedosdados.org/dataset/d2200639-0843-4960-99a2-f844df1fa3d1
+    - nome: Exame Nacional de Desempenho dos Estudantes (Enade)
+      url: https://basedosdados.org/dataset/b229526d-bf4e-4428-8ea1-9903ea2257d6
+    - nome: Teses e Dissertações
+      url: https://basedosdados.org/dataset/0b58e6db-d5c7-43dc-bfb7-8346bae5a3bb
+  - nome: Educação profissional e técnica
+    conjuntos:
+    - nome: Pronatec
+      url: https://basedosdados.org/dataset/a5e7d42c-8ae0-4fc2-9325-25f29fa0098e
+  - nome: Financiamento da educação
+    conjuntos:
+    - nome: Fundeb
+      url: https://basedosdados.org/dataset/9295564a-ca3d-42d6-9a71-fe5f4c1a0182
+  - nome: Patrimônio cultural
+    conjuntos: []
+  - nome: Fomento à cultura
+    conjuntos: []
+  - nome: Equipamentos culturais
+    conjuntos:
+    - nome: Museus BR
+      url: https://basedosdados.org/dataset/ca9fb491-314f-433e-b8e8-f1db27235442
+  - nome: Audiovisual e economia criativa
+    conjuntos: []
+  - nome: Prática esportiva
+    conjuntos:
+    - nome: PNS (Pesquisa Nacional de Saúde)
+      url: https://basedosdados.org/dataset/86bac6cc-575f-4289-a857-13f3f52c9a1d
+  - nome: Fomento ao esporte
+    conjuntos: []
+  - nome: Infraestrutura esportiva e de lazer
+    conjuntos: []
+- sigla: CDPDA
+  nome: Defesa da Pessoa com Deficiência e Atipicidades
+  temas:
+  - nome: Perfil da população com deficiência
+    conjuntos:
+    - nome: Censo Demográfico 2022
+      url: https://basedosdados.org/dataset/08a1546e-251f-4546-9fe0-b1e6ab2b203d
+    - nome: PNAD Contínua
+      url: https://basedosdados.org/dataset/9fa532fb-5681-4903-b99d-01dc45fd527a
+    - nome: PNS (Pesquisa Nacional de Saúde)
+      url: https://basedosdados.org/dataset/86bac6cc-575f-4289-a857-13f3f52c9a1d
+  - nome: Transtorno do Espectro Autista e outras atipicidades
+    conjuntos:
+    - nome: Censo Demográfico 2022
+      url: https://basedosdados.org/dataset/08a1546e-251f-4546-9fe0-b1e6ab2b203d
+  - nome: Educação inclusiva
+    conjuntos:
+    - nome: Educação Especial
+      url: https://basedosdados.org/dataset/f8ab4a9d-7457-4f5f-8a50-9eec334e9abe
+    - nome: Censo Escolar
+      url: https://basedosdados.org/dataset/dae21af4-4b6a-42f4-b94a-4c2061ea9de5
+  - nome: Trabalho e cota de contratação
+    conjuntos:
+    - nome: RAIS
+      url: https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00
+    - nome: CAGED
+      url: https://basedosdados.org/dataset/562b56a3-0b01-4735-a049-eeac5681f056
+  - nome: Benefícios e proteção social
+    conjuntos:
+    - nome: Benefícios do INSS
+      url: https://basedosdados.org/dataset/4440e775-4912-4531-8d32-691a575fedaf
+    - nome: Cadastro Único
+      url: https://basedosdados.org/dataset/5873d313-68aa-4175-8d52-1c2edf006854
+    - nome: Benefícios ao Cidadão
+      url: https://basedosdados.org/dataset/a9a5b35d-2b41-4be5-be07-7256e713ba53
+  - nome: Saúde e reabilitação
+    conjuntos:
+    - nome: Cadastro Nacional de Estabelecimentos de Saúde (CNES)
+      url: https://basedosdados.org/dataset/354d6d98-bc09-4e22-a58a-e4eac3a5283c
+    - nome: SIA - Sistema de Informações Ambulatoriais
+      url: https://basedosdados.org/dataset/22d1f0d6-9bbc-4653-a841-7734867d2319
+    - nome: Nascidos Vivos com Microcefalia ou Zika
+      url: https://basedosdados.org/dataset/bdaa4883-1c44-4cac-8fe4-b5daa768640e
+  - nome: Acessibilidade e mobilidade
+    conjuntos:
+    - nome: Empreendimentos Turísticos Acessíveis
+      url: https://basedosdados.org/dataset/3bc92853-5a1b-4bca-ba9f-ec4b9e72f3b6
+    - nome: Indicadores de Mobilidade (MobiliDADOS)
+      url: https://basedosdados.org/dataset/e3edf621-c491-4d74-a03a-15a759f6e638
+  - nome: Violência contra a pessoa com deficiência
+    conjuntos:
+    - nome: SINAN
+      url: https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a
+- sigla: CMASPA
+  nome: Meio Ambiente, Sustentabilidade e Proteção Animal
+  temas:
+  - nome: Cobertura vegetal e desmatamento
+    conjuntos:
+    - nome: PRODES
+      url: https://basedosdados.org/dataset/e5c87240-ecce-4856-97c5-e6b84984bf42
+    - nome: MapBiomas Alerta
+      url: https://basedosdados.org/dataset/bf32a292-1777-46ec-a4b2-d0fc08d4c6a0
+    - nome: DETER - Sistema de Detecção de Desmatamentos em Tempo Real
+      url: https://basedosdados.org/dataset/52d4efbf-9d1a-4dd0-8558-414bd0fe4124
+  - nome: Queimadas e incêndios florestais
+    conjuntos:
+    - nome: Queimadas
+      url: https://basedosdados.org/dataset/f06f3cdc-b539-409b-b311-1ff8878fb8d9
+    - nome: Incêndios em Unidades de Conservação Federais
+      url: https://basedosdados.org/dataset/66a071ae-3fe1-43a9-a59e-fed043b45e21
+  - nome: Licenciamento e fiscalização ambiental
+    conjuntos:
+    - nome: SISLIC - Sistema de Licenciamento Ambiental
+      url: https://basedosdados.org/dataset/c2c383fc-8d1c-45fe-84f9-fcf047655098
+    - nome: Autuados por Infrações Ambientais
+      url: https://basedosdados.org/dataset/f8365e56-9a90-427b-ab8f-b14b93416063
+    - nome: Autuações Ambientais e Embargos
+      url: https://basedosdados.org/dataset/b4c69d95-d132-4ab3-b828-7761913333fb
+    - nome: Áreas embargadas
+      url: https://basedosdados.org/dataset/6e4e2ee4-41bc-488f-a975-bfa09f2fb551
+    - nome: Autorização de Exploração Florestal
+      url: https://basedosdados.org/dataset/9be51b5f-491a-4184-82e4-e75089beb2b9
+    - nome: Documento de Origem Florestal (DOF)
+      url: https://basedosdados.org/dataset/40142906-865c-4e06-b3ed-70c899917b6d
+    - nome: Transportes de Produtos Florestais
+      url: https://basedosdados.org/dataset/e843e875-6718-43a2-b9d6-e818dcc6998a
+  - nome: Unidades de conservação
+    conjuntos:
+    - nome: Unidades de Conservação
+      url: https://basedosdados.org/dataset/f7cdd130-6bd5-4df7-b493-0ba13e5876b0
+    - nome: Unidades de Conservação - Painel Dinâmico de Informações Gerenciais
+      url: https://basedosdados.org/dataset/1007aef8-2ec0-457b-917e-e58817201d71
+  - nome: Mudanças climáticas
+    conjuntos:
+    - nome: SIRENE - Registro Nacional de Emissões
+      url: https://basedosdados.org/dataset/245512ce-f9db-4308-8255-7ae937f60415
+    - nome: Dados Meteorológicos (INMET)
+      url: https://basedosdados.org/dataset/782c5607-9f69-4e12-b0d5-aa0f1a7a94e2
+  - nome: Resíduos sólidos
+    conjuntos:
+    - nome: Resíduos Sólidos
+      url: https://basedosdados.org/dataset/d1e1d4d7-6bf6-41cc-8568-a61d0e4583c8
+  - nome: Riscos geológicos e desastres climáticos
+    conjuntos:
+    - nome: S2iD - Sistema Integrado de Informações sobre Desastres
+      url: https://basedosdados.org/dataset/a4d908ad-94e6-4d19-81cf-6b136449f8fa
+    - nome: Manchas de Óleo no Litoral Brasileiro
+      url: https://basedosdados.org/dataset/54a10e99-5dc3-494a-bd2f-db2f64d39b62
+  - nome: Qualidade da água
+    conjuntos: []
+  - nome: Segurança de barragens
+    conjuntos:
+    - nome: SIGBM - Barragens de Mineração
+      url: https://basedosdados.org/dataset/0dccae0e-f872-450b-a209-075a5e877150
+  - nome: Seca e escassez hídrica
+    conjuntos:
+    - nome: Reservatórios
+      url: https://basedosdados.org/dataset/fc7e9d13-714d-42c1-8986-bd2a3108e208
+  - nome: Saneamento
+    conjuntos:
+    - nome: SNIS - Sistema Nacional de Informações sobre Saneamento
+      url: https://basedosdados.org/dataset/2a543ad8-3cdb-4047-9498-efe7fb8ed697
+    - nome: Atlas Esgotos
+      url: https://basedosdados.org/dataset/fdd3e0b6-a5bd-4cb6-83c9-eae7cb5cdccb
+    - nome: Pesquisa Nacional de Saneamento Básico (PNSB)
+      url: https://basedosdados.org/dataset/d196c2d8-2867-4879-a48e-b1f676481791
+  - nome: Fauna silvestre
+    conjuntos:
+    - nome: Espécies Ameaçadas de Extinção (MMA)
+      url: https://basedosdados.org/dataset/2b9606d2-27c3-4015-9eca-82cf356b5c25
+    - nome: SISCITES
+      url: https://basedosdados.org/dataset/7552d371-77cb-42f9-9beb-10d88830503b
+  - nome: Maus-tratos a animais
+    conjuntos:
+    - nome: SinPatinhas - Cadastro Nacional de Animais (MMA)
+      url: https://basedosdados.org/dataset/b8e72d64-5416-4a6e-a796-b47a0a600ddc
+  - nome: Zoonoses e controle populacional de animais
+    conjuntos: []
+- sigla: CAPDR
+  nome: Agricultura, Pecuária e Desenvolvimento Rural
+  temas:
+  - nome: Produção agrícola
+    conjuntos:
+    - nome: Produção Agrícola Municipal (PAM)
+      url: https://basedosdados.org/dataset/fc403b40-a7e1-40e7-9efe-910847b45a69
+    - nome: Produção Agrícola
+      url: https://basedosdados.org/dataset/b05e2d50-413f-40a5-9b23-73820bc80703
+  - nome: Pecuária
+    conjuntos:
+    - nome: Pesquisa da Pecuária Municipal (PPM)
+      url: https://basedosdados.org/dataset/f7df4160-7a6f-4658-a287-3a73d412ed10
+  - nome: Estrutura fundiária
+    conjuntos:
+    - nome: Censo Agropecuário
+      url: https://basedosdados.org/dataset/55a39c28-58f3-4804-827d-6eee5ed27b6b
+    - nome: SNCR - Sistema Nacional de Cadastro Rural
+      url: https://basedosdados.org/dataset/021ce8ad-d7ef-41fa-b5dd-ab5cd08d76e3
+    - nome: Imóveis Rurais
+      url: https://basedosdados.org/dataset/37807a93-219d-45d6-b2ae-5f3f2746a035
+    - nome: Atlas da Agropecuária Brasileira
+      url: https://basedosdados.org/dataset/1070d94f-c697-4af3-b73b-1d1499b3d844
+  - nome: Agricultura familiar e crédito rural
+    conjuntos:
+    - nome: Matriz de Dados do Crédito Rural (MDCR)
+      url: https://basedosdados.org/dataset/dcf205a3-4ce8-4be5-a249-4b846e1c5734
+    - nome: SICOR (Crédito Rural)
+      url: https://basedosdados.org/dataset/544c9d22-97b7-479a-8eca-94762840b465
+    - nome: Programa de Fomento Rural
+      url: https://basedosdados.org/dataset/c35578a0-5fe3-4d14-bdeb-a231f83b4490
+  - nome: Sanidade animal e vegetal
+    conjuntos:
+    - nome: AGROFIT
+      url: https://basedosdados.org/dataset/f245440a-910e-4d2d-b92c-5e14093577d0
+    - nome: PARA - Programa de Análise de Resíduos de Agrotóxicos em Alimentos
+      url: https://basedosdados.org/dataset/bcd2fa51-15f9-4cad-a1d5-c95a1627744d
+    - nome: Plano Nacional de Controle de Resíduos e Contaminantes (PNCRC)
+      url: https://basedosdados.org/dataset/7c5f043e-b6dd-4b33-a649-9b6044cdd9a4
+    - nome: Classificação de Agrotóxicos e Cancerígenos do IARC
+      url: https://basedosdados.org/dataset/3eccccc8-8f78-4111-9f1c-bc1fe13e167d
+  - nome: Assistência técnica e pesquisa agropecuária
+    conjuntos: []
+  - nome: Reforma agrária e regularização fundiária
+    conjuntos:
+    - nome: Sistema de Gestão Fundiária
+      url: https://basedosdados.org/dataset/144dd534-084b-43de-83db-b48a4f205d52
+    - nome: Conflitos no Campo
+      url: https://basedosdados.org/dataset/745c4d41-df2e-42a0-bda9-d66ab577e980
+    - nome: DATALUTA
+      url: https://basedosdados.org/dataset/7f67f9bf-7a6b-4268-acb7-7c677c50c232
+  - nome: Irrigação e semiárido
+    conjuntos:
+    - nome: Agricultura por Pivôs Centrais no Brasil
+      url: https://basedosdados.org/dataset/530b942f-d1cd-46bb-9291-1ea1c88b1e62
+  - nome: Abastecimento e comercialização
+    conjuntos:
+    - nome: Painel Dinâmico da Fiscalização do Abastecimento
+      url: https://basedosdados.org/dataset/47a22953-78b6-48e0-8348-31e4b7665b62
+    - nome: Cadastro Nacional de Produtores Orgânicos
+      url: https://basedosdados.org/dataset/c866e4fc-7aa4-47d9-84b8-0f1da8a19b6c
+    - nome: Mapa de Feiras Orgânicas
+      url: https://basedosdados.org/dataset/92e16fb3-dbba-4445-a787-b5dda31202ba
+- sigla: CSAS
+  nome: Saúde e Assistência Social
+  temas:
+  - nome: Mortalidade geral, infantil e materna
+    conjuntos:
+    - nome: Sistema de Informações sobre Mortalidade (SIM)
+      url: https://basedosdados.org/dataset/5beeec93-cbf3-43f6-9eea-9bee6a0d1683
+    - nome: SINASC - Sistema de Informações sobre Nascidos Vivos
+      url: https://basedosdados.org/dataset/48ccef51-8207-40ee-af5b-134c8ac3fb8c
+    - nome: Atlas de Mortalidade por Câncer
+      url: https://basedosdados.org/dataset/a9bf376a-0317-4be5-82e7-0ff7990a08ae
+  - nome: Internações e morbidade
+    conjuntos:
+    - nome: SIH - Sistema de Informações Hospitalares
+      url: https://basedosdados.org/dataset/ff933265-8b61-4458-877a-173b3f38102b
+    - nome: SIA - Sistema de Informações Ambulatoriais
+      url: https://basedosdados.org/dataset/22d1f0d6-9bbc-4653-a841-7734867d2319
+  - nome: Rede assistencial e capacidade instalada
+    conjuntos:
+    - nome: Cadastro Nacional de Estabelecimentos de Saúde (CNES)
+      url: https://basedosdados.org/dataset/354d6d98-bc09-4e22-a58a-e4eac3a5283c
+    - nome: Pesquisa de Assistência Médico-Sanitária (AMS)
+      url: https://basedosdados.org/dataset/82508982-212e-4824-8864-d1c0976c9e04
+  - nome: Atenção primária
+    conjuntos:
+    - nome: Cobertura da Atenção Básica
+      url: https://basedosdados.org/dataset/2cc0b275-d02a-413a-8769-7ce2785d86ae
+    - nome: Distribuição Geográfica do Programa Mais Médicos (PMM)
+      url: https://basedosdados.org/dataset/fc7ca4be-7207-4de4-a82c-33659ea70e74
+    - nome: Indicadores do Programa Mais Médicos (PMM)
+      url: https://basedosdados.org/dataset/50a661f9-1bbb-4ec4-aab4-a5e0bd8958ab
+  - nome: Vigilância epidemiológica
+    conjuntos:
+    - nome: SINAN
+      url: https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a
+    - nome: InfoGripe
+      url: https://basedosdados.org/dataset/736ad69a-5cb1-4e52-9a13-535d439853a6
+    - nome: Notificação de Casos de COVID-19
+      url: https://basedosdados.org/dataset/c1db6966-a3b5-4606-9e4c-aa228f59885e
+  - nome: Imunização
+    conjuntos:
+    - nome: Imunizações
+      url: https://basedosdados.org/dataset/e4f44946-b89f-4733-93e8-26b3ef0ab778
+    - nome: Vacinação COVID-19
+      url: https://basedosdados.org/dataset/5020ca16-6df4-43bd-8717-eab37ef84c30
+  - nome: Saúde mental
+    conjuntos:
+    - nome: PNS (Pesquisa Nacional de Saúde)
+      url: https://basedosdados.org/dataset/86bac6cc-575f-4289-a857-13f3f52c9a1d
+  - nome: Regulação de consultas e cirurgias
+    conjuntos: []
+  - nome: Planos de saúde
+    conjuntos: []
+  - nome: Vigilância sanitária e medicamentos
+    conjuntos:
+    - nome: Medicamentos Industrializados (Anvisa)
+      url: https://basedosdados.org/dataset/bd52ab08-9980-4831-a88c-a1ac5226ef27
+    - nome: Preços de Medicamentos ao Consumidor
+      url: https://basedosdados.org/dataset/d610f209-e03f-46a4-9c8b-1b8f17a1a37f
+    - nome: SINITOX
+      url: https://basedosdados.org/dataset/c218acdc-4e3b-4113-b0ef-d6dac09e8f90
+  - nome: Financiamento da saúde
+    conjuntos:
+    - nome: SIOPS
+      url: https://basedosdados.org/dataset/f423b664-5a98-41a3-99b4-fda18fd4c76e
+  - nome: Cadastro Único e pobreza
+    conjuntos:
+    - nome: Cadastro Único
+      url: https://basedosdados.org/dataset/5873d313-68aa-4175-8d52-1c2edf006854
+    - nome: POF (Pesquisa de Orçamentos Familiares)
+      url: https://basedosdados.org/dataset/a1b6d2b6-4aa6-47e7-a517-8a21b28b7254
+    - nome: PNAD Contínua
+      url: https://basedosdados.org/dataset/9fa532fb-5681-4903-b99d-01dc45fd527a
+  - nome: Transferência de renda
+    conjuntos:
+    - nome: Bolsa Família
+      url: https://basedosdados.org/dataset/ba5ff438-e516-4608-aad1-77286d5989e8
+    - nome: Auxílio Emergencial
+      url: https://basedosdados.org/dataset/1e768395-e834-4495-a80c-f96f6db57efb
+    - nome: Benefícios ao Cidadão
+      url: https://basedosdados.org/dataset/a9a5b35d-2b41-4be5-be07-7256e713ba53
+  - nome: Benefício de Prestação Continuada
+    conjuntos:
+    - nome: Benefícios do INSS
+      url: https://basedosdados.org/dataset/4440e775-4912-4531-8d32-691a575fedaf
+  - nome: Rede socioassistencial
+    conjuntos:
+    - nome: Censo do SUAS
+      url: https://basedosdados.org/dataset/4951c1e5-58b9-49e0-b42b-7b18847522ab
+    - nome: Pesquisa de Entidades de Assistência Social Privadas Sem Fins Lucrativos (PEAS)
+      url: https://basedosdados.org/dataset/5aee057d-a6eb-4337-bb01-0e7dfe65c38e
+  - nome: Segurança alimentar e nutricional
+    conjuntos:
+    - nome: SISVAN
+      url: https://basedosdados.org/dataset/d0b61e1c-2ff2-43e7-b32f-5a054ba9b688
+    - nome: Insegurança Alimentar
+      url: https://basedosdados.org/dataset/6afe59d2-aabe-42a0-b42c-3d6e28952e11
+    - nome: MAPASAN
+      url: https://basedosdados.org/dataset/55981a8a-be82-4ea0-b7a6-52e80815ab7d
+    - nome: POF (Pesquisa de Orçamentos Familiares)
+      url: https://basedosdados.org/dataset/a1b6d2b6-4aa6-47e7-a517-8a21b28b7254
+- sigla: CCTI
+  nome: Ciência, Tecnologia e Inovação
+  temas:
+  - nome: Fomento à pesquisa
+    conjuntos:
+    - nome: Bolsas do CNPq
+      url: https://basedosdados.org/dataset/43cba610-415a-4c0a-958f-4c57d82c2f0f
+  - nome: Formação de pesquisadores
+    conjuntos:
+    - nome: Teses e Dissertações
+      url: https://basedosdados.org/dataset/0b58e6db-d5c7-43dc-bfb7-8346bae5a3bb
+    - nome: Qualis Periódicos
+      url: https://basedosdados.org/dataset/05d3040c-d454-43ca-b3d3-ef1e83da1c6c
+  - nome: Inovação nas empresas
+    conjuntos:
+    - nome: Pesquisa de Inovação (PINTEC)
+      url: https://basedosdados.org/dataset/fc34df5d-03b2-40d5-928b-97bb74f2f37c
+    - nome: TIC Empresas
+      url: https://basedosdados.org/dataset/83aee071-8658-424c-829d-ae43c752018e
+  - nome: Propriedade intelectual e patentes
+    conjuntos: []
+  - nome: Ecossistema de inovação
+    conjuntos: []
+  - nome: Conectividade e inclusão digital
+    conjuntos:
+    - nome: TIC Domicílios
+      url: https://basedosdados.org/dataset/5eb3ba0b-32ab-4bc9-871d-b1a08990f380
+    - nome: Banda Larga Fixa (Anatel)
+      url: https://basedosdados.org/dataset/4ba41417-ba19-4022-bc24-6837db973009
+    - nome: Telefonia Móvel (Anatel)
+      url: https://basedosdados.org/dataset/d3c86a88-d9a4-4fc0-bdec-08ab61e8f63c
+    - nome: GESAC
+      url: https://basedosdados.org/dataset/5de8501a-ae19-4b7f-8ebc-b00f54eea3fe
+    - nome: Índice Brasileiro de Conectividade
+      url: https://basedosdados.org/dataset/ad45c5dc-ecc6-43db-ae2c-45d71939e7c5
+    - nome: SIMET - Educação Conectada
+      url: https://basedosdados.org/dataset/69102969-73eb-41cf-ae9c-e647d7ad6034
+    - nome: TIC Educação
+      url: https://basedosdados.org/dataset/33dfd37d-0c40-4064-95a7-361651a6088a
+  - nome: Proteção de dados pessoais
+    conjuntos: []
+  - nome: Investimento público em ciência e tecnologia
+    conjuntos:
+    - nome: Bolsas do CNPq
+      url: https://basedosdados.org/dataset/43cba610-415a-4c0a-958f-4c57d82c2f0f
+- sigla: CCDHPP
+  nome: Cidadania, Direitos Humanos e Participação Popular
+  temas:
+  - nome: Denúncias de violações de direitos humanos
+    conjuntos: []
+  - nome: Igualdade racial, quilombolas e indígenas
+    conjuntos:
+    - nome: Certificação Quilombola
+      url: https://basedosdados.org/dataset/170aec85-44f5-425e-bfeb-a417b613411c
+    - nome: Terras Indígenas - Sistema Indigenista de Informações
+      url: https://basedosdados.org/dataset/f5960720-6762-4a28-858e-dc4960922c44
+  - nome: População LGBTQIA+
+    conjuntos: []
+  - nome: Criança e adolescente
+    conjuntos: []
+  - nome: Pessoa idosa
+    conjuntos:
+    - nome: Centros de Convivência de Idosos
+      url: https://basedosdados.org/dataset/6067b6bd-cefa-4308-ae6e-43aa84b9b44c
+  - nome: População em situação de rua
+    conjuntos:
+    - nome: Censo e Pesquisa Nacional sobre a População em Situação de Rua
+      url: https://basedosdados.org/dataset/2801edf4-30e0-4964-89bb-f83b2399d62d
+  - nome: Trabalho escravo e tráfico de pessoas
+    conjuntos: []
+  - nome: Moradia e déficit habitacional
+    conjuntos:
+    - nome: Censo Demográfico 2022
+      url: https://basedosdados.org/dataset/08a1546e-251f-4546-9fe0-b1e6ab2b203d
+  - nome: Participação popular e controle social
+    conjuntos:
+    - nome: Mapa das ONGs no Brasil
+      url: https://basedosdados.org/dataset/0a01d904-4f5e-4a9d-8952-ef1e95f313f0
+    - nome: TIC Organizações Sem Fins Lucrativos
+      url: https://basedosdados.org/dataset/39893417-4f77-47cf-96ce-1fec58023613
+  - nome: Participação política e eleitoral
+    conjuntos:
+    - nome: Eleições
+      url: https://basedosdados.org/dataset/eef764df-bde8-4905-b115-6fc23b6ba9d6
+    - nome: Filiação Partidária
+      url: https://basedosdados.org/dataset/e68b1cfd-ca29-4bdc-b687-424d9c59760e
+  - nome: Documentação civil
+    conjuntos:
+    - nome: Estatísticas do Registro Civil
+      url: https://basedosdados.org/dataset/917143ab-9933-4450-bc12-727a24356ec5
+    - nome: Portal da Transparência do Registro Civil
+      url: https://basedosdados.org/dataset/c70750d8-e11d-462d-bd8f-266f34c08904
+    - nome: Lista de Cartórios
+      url: https://basedosdados.org/dataset/2368d9cc-8241-4fbd-afc9-38a0983a57e5
+- sigla: CDDM
+  nome: Defesa dos Direitos da Mulher
+  temas:
+  - nome: Feminicídio e violência letal
+    conjuntos:
+    - nome: Atlas da Violência
+      url: https://basedosdados.org/dataset/6a369357-ae3e-438d-b56e-762974ba131e
+    - nome: Anuário Brasileiro de Segurança Pública
+      url: https://basedosdados.org/dataset/9a2368e4-2fa6-4b42-88b7-026aa048f5ab
+  - nome: Violência doméstica e sexual
+    conjuntos:
+    - nome: SINAN
+      url: https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a
+  - nome: Medidas protetivas e acesso à Justiça
+    conjuntos:
+    - nome: Justiça em Números
+      url: https://basedosdados.org/dataset/434b5bcd-625c-49c1-ace9-0cfe8671b250
+  - nome: Rede de atendimento à mulher
+    conjuntos:
+    - nome: MUNIC (Pesquisa de Informações Básicas Municipais)
+      url: https://basedosdados.org/dataset/218ae306-29ac-4a83-836d-95bfdb9683fe
+  - nome: Mulheres no trabalho e renda
+    conjuntos:
+    - nome: RAIS
+      url: https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00
+    - nome: PNAD Contínua
+      url: https://basedosdados.org/dataset/9fa532fb-5681-4903-b99d-01dc45fd527a
+  - nome: Cuidado e uso do tempo
+    conjuntos:
+    - nome: PNAD Contínua
+      url: https://basedosdados.org/dataset/9fa532fb-5681-4903-b99d-01dc45fd527a
+  - nome: Mulheres na política
+    conjuntos:
+    - nome: Eleições
+      url: https://basedosdados.org/dataset/eef764df-bde8-4905-b115-6fc23b6ba9d6
+    - nome: Filiação Partidária
+      url: https://basedosdados.org/dataset/e68b1cfd-ca29-4bdc-b687-424d9c59760e
+  - nome: Saúde da mulher
+    conjuntos:
+    - nome: Sistema de Informações sobre Mortalidade (SIM)
+      url: https://basedosdados.org/dataset/5beeec93-cbf3-43f6-9eea-9bee6a0d1683
+    - nome: SINASC - Sistema de Informações sobre Nascidos Vivos
+      url: https://basedosdados.org/dataset/48ccef51-8207-40ee-af5b-134c8ac3fb8c
+    - nome: PNS (Pesquisa Nacional de Saúde)
+      url: https://basedosdados.org/dataset/86bac6cc-575f-4289-a857-13f3f52c9a1d
+- sigla: CSPDS
+  nome: Segurança Pública e Defesa Social
+  temas:
+  - nome: Crimes violentos letais intencionais
+    conjuntos:
+    - nome: SINESP
+      url: https://basedosdados.org/dataset/7f6f7de2-f4e9-467c-a8c4-a66a6559803d
+    - nome: Anuário Brasileiro de Segurança Pública
+      url: https://basedosdados.org/dataset/9a2368e4-2fa6-4b42-88b7-026aa048f5ab
+    - nome: Atlas da Violência
+      url: https://basedosdados.org/dataset/6a369357-ae3e-438d-b56e-762974ba131e
+    - nome: Sistema de Informações sobre Mortalidade (SIM)
+      url: https://basedosdados.org/dataset/5beeec93-cbf3-43f6-9eea-9bee6a0d1683
+  - nome: Crimes contra o patrimônio
+    conjuntos:
+    - nome: SINESP
+      url: https://basedosdados.org/dataset/7f6f7de2-f4e9-467c-a8c4-a66a6559803d
+  - nome: Letalidade policial
+    conjuntos:
+    - nome: Anuário Brasileiro de Segurança Pública
+      url: https://basedosdados.org/dataset/9a2368e4-2fa6-4b42-88b7-026aa048f5ab
+  - nome: Efetivo e estrutura das forças de segurança
+    conjuntos:
+    - nome: Anuário Brasileiro de Segurança Pública
+      url: https://basedosdados.org/dataset/9a2368e4-2fa6-4b42-88b7-026aa048f5ab
+  - nome: Armas de fogo
+    conjuntos:
+    - nome: SINARM
+      url: https://basedosdados.org/dataset/6733bc3c-0e26-4b21-8c36-07396c7df2b4
+    - nome: Posse e Porte de Arma de Fogo
+      url: https://basedosdados.org/dataset/74ff68be-f77c-4696-a946-346e94896b51
+  - nome: Trânsito
+    conjuntos:
+    - nome: Acidentes em Rodovias Federais
+      url: https://basedosdados.org/dataset/d8f20719-cd6b-41cb-8386-76ed91565a78
+    - nome: Acidentes de Trânsito
+      url: https://basedosdados.org/dataset/5b33d4d8-954b-4cb2-9c65-ba009dd16f9a
+    - nome: Estatísticas do Senatran
+      url: https://basedosdados.org/dataset/61d592ca-5aec-4f66-b8eb-f7b894a29b66
+    - nome: Quantidade de Infrações de Trânsito
+      url: https://basedosdados.org/dataset/37e18e5e-43b1-4feb-a127-92474ad28948
+  - nome: Programas de prevenção à violência
+    conjuntos: []
+  - nome: Sistema prisional
+    conjuntos:
+    - nome: SISDEPEN
+      url: https://basedosdados.org/dataset/5ee80380-83fd-4e13-b145-437cb227a087
+    - nome: Geopresídios - Radiografia do Sistema Prisional
+      url: https://basedosdados.org/dataset/44b8ed60-7c46-45e1-a350-b15241075626
+    - nome: Banco Nacional de Monitoramento de Prisões (BNMP)
+      url: https://basedosdados.org/dataset/640bcf13-88f7-4475-80ce-caeddbc4beed
+  - nome: Sistema socioeducativo
+    conjuntos: []
+  - nome: Defesa civil
+    conjuntos:
+    - nome: S2iD - Sistema Integrado de Informações sobre Desastres
+      url: https://basedosdados.org/dataset/a4d908ad-94e6-4d19-81cf-6b136449f8fa
+  - nome: Corpo de Bombeiros
+    conjuntos: []
+- sigla: CDC
+  nome: Defesa do Consumidor
+  temas:
+  - nome: Reclamações de consumo
+    conjuntos: []
+  - nome: Telecomunicações
+    conjuntos:
+    - nome: Telefonia Móvel (Anatel)
+      url: https://basedosdados.org/dataset/d3c86a88-d9a4-4fc0-bdec-08ab61e8f63c
+    - nome: Banda Larga Fixa (Anatel)
+      url: https://basedosdados.org/dataset/4ba41417-ba19-4022-bc24-6837db973009
+    - nome: Indicadores de Qualidade da Telefonia Móvel (SMP)
+      url: https://basedosdados.org/dataset/ada6e1ec-7a31-45aa-b189-b1acb4e284a6
+    - nome: Indicadores de Qualidade da Telefonia Fixa (STFC)
+      url: https://basedosdados.org/dataset/0387cb9d-899b-4865-9d15-18e96bb6f93d
+    - nome: Indicadores de Qualidade da Banda Larga Fixa (SCM)
+      url: https://basedosdados.org/dataset/06cb32fd-e9f9-442b-8dc2-66c623efc1f5
+  - nome: Energia elétrica e saneamento
+    conjuntos:
+    - nome: Consumo de Energia Elétrica
+      url: https://basedosdados.org/dataset/3e31e540-81ba-4665-9e72-3f81c176adad
+    - nome: Indicadores da Distribuição de Energia Elétrica
+      url: https://basedosdados.org/dataset/ed2ad36e-072c-4ab1-ad14-cbdb78f6165f
+    - nome: SNIS - Sistema Nacional de Informações sobre Saneamento
+      url: https://basedosdados.org/dataset/2a543ad8-3cdb-4047-9498-efe7fb8ed697
+  - nome: Planos de saúde
+    conjuntos: []
+  - nome: Serviços financeiros e endividamento
+    conjuntos: []
+  - nome: Transporte aéreo e viagens
+    conjuntos:
+    - nome: Dados Estatísticos da ANAC
+      url: https://basedosdados.org/dataset/20f3f906-4a8c-4ce3-8274-4da5a76ef560
+  - nome: Comércio eletrônico e golpes digitais
+    conjuntos: []
+  - nome: Preços e cesta básica
+    conjuntos:
+    - nome: IPCA - Índice Nacional de Preços ao Consumidor Amplo
+      url: https://basedosdados.org/dataset/5c7c6f34-2d6d-464d-a913-d1590073da86
+    - nome: INPC
+      url: https://basedosdados.org/dataset/92945390-3b20-40e7-b71b-f6b58f3dc754
+    - nome: Preços de Combustíveis
+      url: https://basedosdados.org/dataset/6ea3e28a-42be-401a-a066-ad87ca931e69
+    - nome: Preços de Medicamentos ao Consumidor
+      url: https://basedosdados.org/dataset/d610f209-e03f-46a4-9c8b-1b8f17a1a37f
+  - nome: Litígios de consumo
+    conjuntos:
+    - nome: Justiça em Números
+      url: https://basedosdados.org/dataset/434b5bcd-625c-49c1-ace9-0cfe8671b250

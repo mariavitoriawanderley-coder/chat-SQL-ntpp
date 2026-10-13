@@ -1,0 +1,45 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_ms_sim__microdados
+dataset_id: br_ms_sim
+table_id: microdados
+nome_exibicao: Sistema de Informação sobre Mortalidade
+area: saude
+fonte: Ministério da Saúde
+url_documentacao: https://basedosdados.org/dataset/br-ms-sim
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  TODO — o que a tabela contém, quem produz, com que finalidade e que tipo
+  de pergunta ela responde.
+
+palavras_chave: []
+
+perguntas_exemplo: []
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: TODO — o que é UMA linha desta tabela.
+cobertura_temporal: { inicio: null, fim: null }
+cobertura_geografica: TODO
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: []
+sem_particao: false
+volume_aproximado: TODO
+observacoes: |
+  TODO — quebras de série, mudanças de codificação, anos atípicos.
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas: []
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo: []

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Empenhos PE — Pesquisa assistida</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css', v=versao_estaticos) }}" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">PE</div>
+        <div>
+          <div class="brand-title">Empenhos PE</div>
+          <div class="brand-sub">Pesquisa assistida</div>
+        </div>
+      </div>
+
+      <button id="nova-conversa" class="btn-nova" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nova conversa
+      </button>
+
+      <nav class="guia" aria-label="Etapas da pesquisa">
+        <p class="guia-titulo">Como funciona</p>
+        <ol id="etapas" class="etapas">
+          <li data-etapa="1"><span class="etapa-num">1</span><span class="etapa-txt">Descreva a despesa e o período</span></li>
+          <li data-etapa="2"><span class="etapa-num">2</span><span class="etapa-txt">Confirme a fonte de dados</span></li>
+          <li data-etapa="3"><span class="etapa-num">3</span><span class="etapa-txt">Valide a classificação</span></li>
+          <li data-etapa="4"><span class="etapa-num">4</span><span class="etapa-txt">Baixe planilhas e painéis</span></li>
+        </ol>
+      </nav>
+
+      <div class="fontes-box">
+        <p class="guia-titulo">Fontes disponíveis</p>
+        <p class="fonte-item"><span class="ponto ponto-portal"></span>Portal da Transparência</p>
+        <p class="fonte-item"><span class="ponto ponto-tce"></span>Dados Abertos do TCE-PE</p>
+      </div>
+
+      <div class="sidebar-rodape">
+        {% if auth_habilitada and usuario %}
+        <div class="usuario-box">
+          <span class="usuario-avatar" aria-hidden="true">{{ usuario.email[0]|upper }}</span>
+          <span class="usuario-email" title="{{ usuario.email }}">{{ usuario.email }}</span>
+          <a href="{{ url_for('logout') }}" class="sair">Sair</a>
+        </div>
+        {% endif %}
+        <span class="rodape-nota">Dados públicos de execução orçamentária do Estado de Pernambuco.</span>
+      </div>
+    </aside>
+
+    <main class="palco">
+      <section class="chat">
+        <header class="chat-topo">
+          <div class="chat-topo-txt">
+            <h1>Pesquisa de empenhos</h1>
+            <p class="chat-sub">Empenhos, itens de gasto e painéis analíticos</p>
+          </div>
+          <span id="status-fase" class="pill">Etapa 1 · Solicitação</span>
+        </header>
+
+        <div id="mensagens" class="mensagens" role="log" aria-live="polite"></div>
+
+        <form id="formulario" class="entrada" autocomplete="off">
+          <div class="campo">
+            <textarea id="entrada" rows="1" enterkeyhint="send"
+                      placeholder="Ex.: Despesas com merenda escolar em 2024 e 2025"></textarea>
+            <button id="enviar" class="btn-enviar" type="submit" aria-label="Enviar mensagem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+            </button>
+          </div>
+          <p class="dica"><kbd>Enter</kbd> envia · <kbd>Shift</kbd>+<kbd>Enter</kbd> quebra linha</p>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div id="overlay" class="overlay" hidden aria-hidden="true">
+    <div class="overlay-cartao">
+      <div class="spinner" role="status" aria-label="Carregando"></div>
+      <p class="overlay-txt">Consultando as bases públicas…</p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js', v=versao_estaticos) }}"></script>
+</body>
+</html>

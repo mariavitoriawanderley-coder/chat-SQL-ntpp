@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   Concretismo de dados — tokens.
+
+   Referência: publicações estatísticas do IBGE dos anos 1960/70, concretismo
+   paulista, ESDI. Grade rígida, cor chapada, zero ornamento. A geometria é o
+   conteúdo, não o enfeite.
+
+   A Fase 5 faz a passagem completa de direção de arte. Aqui ficam apenas os
+   tokens, para que nada nascido antes dela use valor solto.
+   ========================================================================= */
+
+@theme {
+  /* ─── Cor ──────────────────────────────────────────────────────────
+     Nomes de matéria, não de função: a mesma tinta serve a papéis
+     diferentes e renomear por papel obrigaria a duplicar. */
+  --color-papel: #f4f3ef; /* fundo, branco de papel offset */
+  --color-papel-2: #eae8e2; /* superfície elevada, cabeçalho de tabela */
+  --color-tinta: #16181a; /* texto principal, quase preto quente */
+  --color-tinta-2: #5b5f63; /* texto secundário */
+  --color-cobalto: #1f4e9c; /* ação primária, link, estado ativo */
+  --color-ocre: #d9a404; /* destaque, aviso, medidor de custo */
+  --color-musgo: #2e6b52; /* confirmação, série positiva */
+  --color-carmim: #b8352c; /* erro, custo acima do teto */
+  --color-linha: #c9c6be; /* divisória de 1px */
+
+  /* Cor por área temática — usada na faixa vertical do cartão de plano,
+     que conecta a consulta ao domínio da pergunta sem ícone nem rótulo. */
+  --color-area-educacao: #1f4e9c;
+  --color-area-saude: #2e6b52;
+  --color-area-economia: #d9a404;
+
+  /* ─── Tipografia ───────────────────────────────────────────────────
+     Três famílias, dois pesos cada, sem exceção. */
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Escala fechada: 12 / 14 / 16 / 20 / 28 / 40. Nada entre os degraus. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+
+  /* ─── Forma ────────────────────────────────────────────────────────
+     Raio máximo de 2px e nenhuma sombra: a hierarquia vem de cor chapada
+     e de posição na grade, nunca de profundidade simulada. */
+  --radius-blk: 2px;
+}
+
+@layer base {
+  /* A largura expandida do Archivo é o que dá autoridade institucional ao
+     display sem virar pastiche. Vem do eixo `wdth` da fonte variável. */
+  .font-display,
+  [class*="font-display"] {
+    font-stretch: 112%;
+  }
+
+  html {
+    background-color: var(--color-papel);
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--color-tinta);
+    background-color: var(--color-papel);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Toda coluna e todo valor numérico alinham pela figura. */
+  .num,
+  td.num,
+  th.num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* Foco visível em todo controle — piso de qualidade, não enfeite.
+     Quadrado, como o resto. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-cobalto);
+    outline-offset: 2px;
+    border-radius: 0;
+  }
+
+  ::selection {
+    background: var(--color-cobalto);
+    color: var(--color-papel);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

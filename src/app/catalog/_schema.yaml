@@ -1,0 +1,149 @@
+# =============================================================================
+#  FORMATO DO CADASTRO DE TABELAS
+# =============================================================================
+#
+#  Este arquivo é documentação, não cadastro. O carregador ignora tudo que
+#  começa com `_`.
+#
+#  COMO CADASTRAR UMA TABELA
+#
+#    1. Copie este arquivo para `<area>/<id>.yaml`, onde:
+#         area = educacao | saude | economia   (a pasta precisa bater com o campo)
+#         id   = <dataset_id>__<table_id>      (o nome do arquivo precisa bater com o campo)
+#    2. Preencha os campos. Deixe `status: rascunho` enquanto trabalha.
+#    3. Rode `make validar-catalogo` — ele aponta arquivo e campo de cada erro.
+#    4. Quando estiver completo, troque para `status: ativo`. Só então a tabela
+#       entra no índice que o modelo lê.
+#
+#  POR QUE A VALIDAÇÃO É CHATA
+#
+#    O que você escreve aqui é literalmente o que o modelo lê para decidir qual
+#    tabela usa e como escreve o SQL. Um resumo vago vira escolha errada de
+#    tabela; uma partição não declarada vira consulta que varre 50 milhões de
+#    linhas e estoura o teto de custo. É mais barato o erro aparecer aqui.
+#
+# =============================================================================
+
+
+# ─── IDENTIFICAÇÃO ───────────────────────────────────────────────────────────
+
+id: br_inep_censo_escolar__matricula     # obrigatório · = dataset_id + "__" + table_id
+dataset_id: br_inep_censo_escolar        # obrigatório · dataset no BigQuery
+table_id: matricula                      # obrigatório · tabela no BigQuery
+nome_exibicao: Censo Escolar — Matrículas  # obrigatório · o que o usuário lê na tela
+area: educacao                           # obrigatório · educacao | saude | economia
+fonte: INEP                              # obrigatório · quem produz o dado
+url_documentacao: https://basedosdados.org/dataset/...   # opcional
+
+# rascunho = gabarito em preenchimento, validado na estrutura mas FORA do índice.
+# ativo    = publicada; passa por validação estrita e o modelo pode escolhê-la.
+status: rascunho
+
+
+# ─── RESUMO · usado na ETAPA 2, seleção de tabela ────────────────────────────
+#
+# ATENÇÃO: este texto é a ÚNICA coisa que o modelo vê ao escolher a tabela.
+# Nenhuma coluna é enviada nessa etapa. Escreva em prosa, 3 a 6 linhas, e
+# responda: o que a tabela contém, quem produz, com que finalidade, e que tipo
+# de pergunta ela responde. Mínimo de 20 palavras quando `status: ativo`.
+
+resumo: >
+  Registro de matrículas da educação básica brasileira, coletado anualmente
+  pelo INEP. Cada linha representa uma matrícula individual, com informações
+  sobre etapa de ensino, modalidade, dependência administrativa da escola e
+  características do aluno. Responde perguntas sobre volume de matrículas,
+  distribuição por rede pública e privada, e evolução do atendimento escolar
+  por região.
+
+# Termos que alguém usaria na pergunta sem conhecer o nome da tabela.
+palavras_chave: [matrícula, aluno, escola, ensino fundamental, ensino médio, rede pública]
+
+# Perguntas reais que esta tabela responde. Ajudam o modelo a calibrar o
+# encaixe e alimentam as sugestões da tela inicial.
+perguntas_exemplo:
+  - Quantas matrículas no ensino médio houve em Alagoas em 2023?
+  - Como evoluiu a matrícula na rede privada no Nordeste?
+
+
+# ─── CARACTERÍSTICAS DA TABELA ───────────────────────────────────────────────
+
+# O grão diz o que É uma linha. Sem isso o modelo erra entre COUNT(*) e SUM().
+grao: Uma linha por matrícula individual por ano.
+
+cobertura_temporal: { inicio: 2007, fim: 2023 }
+cobertura_geografica: nacional, com desagregação municipal
+
+# Colunas de partição. TODA consulta gerada é obrigada a filtrar por elas —
+# é o que separa uma consulta de centavos de uma de dezenas de reais.
+# Cada nome aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano, sigla_uf]
+
+# Se a tabela realmente não tem partição nenhuma, deixe `particoes: []` e
+# escreva a linha abaixo. É um reconhecimento explícito de que toda consulta
+# vai varrer a tabela inteira.
+# sem_particao: true
+
+volume_aproximado: ~50 milhões de linhas por ano   # opcional, texto livre
+
+# Armadilhas: quebras de série, mudanças de codificação, anos atípicos.
+# O modelo repassa isso ao usuário no campo `avisos` do plano de consulta.
+observacoes: |
+  O censo de 2020 foi afetado pela pandemia; comparações com anos anteriores
+  exigem cautela. A partir de 2019 a variável de etapa de ensino mudou de
+  codificação.
+
+
+# ─── COLUNAS · usado na ETAPA 3, geração do SQL ──────────────────────────────
+#
+# Só as colunas que alguém usaria de fato. Cadastrar 200 colunas de uma tabela
+# larga infla o prompt e piora a geração — escolha as úteis.
+#
+# tipo: STRING | INT64 | FLOAT64 | NUMERIC | BIGNUMERIC | BOOL | DATE |
+#       DATETIME | TIME | TIMESTAMP | GEOGRAPHY
+
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência do censo.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação da escola.
+    particao: true
+    # Para coluna categórica, os valores possíveis. Sem eles o modelo inventa
+    # rótulo ('Pernambuco' em vez de 'PE') e a consulta volta vazia.
+    valores_exemplo: [AL, PE, SP, BA]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município da escola.
+
+  - nome: etapa_ensino
+    tipo: STRING
+    descricao: Etapa de ensino em que o aluno está matriculado.
+    valores_exemplo: [Ensino Fundamental, Ensino Médio, Educação Infantil]
+    nota: A codificação mudou em 2019; ver observações da tabela.
+
+  - nome: rede
+    tipo: STRING
+    descricao: Dependência administrativa da escola.
+    valores_exemplo: [federal, estadual, municipal, privada]
+
+
+# ─── CONSULTAS DE EXEMPLO ────────────────────────────────────────────────────
+#
+# Poucas e boas — duas ou três. Servem de few-shot e, sobretudo, ensinam o
+# padrão de filtro por partição. Use a referência completa da tabela
+# (`basedosdados.<dataset>.<tabela>`), como o validador espera.
+
+consultas_exemplo:
+  - pergunta: Total de matrículas no ensino médio por estado do Nordeste em 2023.
+    sql: |
+      SELECT sigla_uf, COUNT(*) AS matriculas
+      FROM `basedosdados.br_inep_censo_escolar.matricula`
+      WHERE ano = 2023
+        AND sigla_uf IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE')
+        AND etapa_ensino = 'Ensino Médio'
+      GROUP BY sigla_uf
+      ORDER BY matriculas DESC

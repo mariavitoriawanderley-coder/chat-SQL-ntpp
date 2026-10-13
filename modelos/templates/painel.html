@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <title>Painel de Empenhos — PE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='painel.css', v=versao_estaticos) }}" />
+</head>
+<body>
+  <header class="topo">
+    <div class="topo-interno">
+      <div class="marca">
+        <span class="marca-mark">PE</span>
+        <span class="marca-txt">
+          <strong id="titulo-painel">Painel de Empenhos</strong>
+          <span id="resumo" class="resumo">carregando…</span>
+        </span>
+      </div>
+      <button id="exportar-tudo" class="btn-pri" type="button" disabled
+              title="Gera um .xlsx com uma aba de filtros, uma da tabela dinâmica e uma por gráfico">
+        <span aria-hidden="true">⬇</span> Exportar tudo
+      </button>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <div id="carregando" class="estado-carga">
+      <span class="girando" aria-hidden="true"></span> Carregando os dados da pesquisa…
+    </div>
+    <div id="erro" class="estado-erro" role="alert" hidden></div>
+    <div id="aviso-painel" class="estado-aviso" role="status" hidden></div>
+
+    <section id="area" hidden>
+      <!-- Indicadores -->
+      <div class="kpis">
+        <div class="kpi kpi-destaque">
+          <span class="kpi-rotulo">Registros exibidos</span>
+          <span class="kpi-valor" id="kpi-exibidos">—</span>
+          <span class="kpi-nota" id="kpi-total"></span>
+        </div>
+        <div class="kpi" id="kpi-rp-caixa" hidden>
+          <span class="kpi-rotulo">Restos a pagar</span>
+          <span class="kpi-valor" id="kpi-rp">—</span>
+          <span class="kpi-nota" id="kpi-rp-nota">de exercícios anteriores</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-rotulo">Filtros ativos</span>
+          <span class="kpi-valor" id="kpi-filtros">0</span>
+          <span class="kpi-nota" id="kpi-filtros-nota">nenhum filtro</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-rotulo">Período</span>
+          <span class="kpi-valor" id="kpi-periodo">—</span>
+          <span class="kpi-nota" id="kpi-fonte"></span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-rotulo">Colunas</span>
+          <span class="kpi-valor" id="kpi-colunas">—</span>
+          <span class="kpi-nota">dimensões disponíveis</span>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <section class="cartao">
+        <div class="cartao-topo">
+          <div class="cartao-titulo">
+            <h2>Filtros</h2>
+            <p class="cartao-sub">Valem para a tabela dinâmica e para todos os gráficos.</p>
+          </div>
+          <div class="cartao-acoes">
+            <label class="chave" for="ipca-toggle">
+              <input type="checkbox" id="ipca-toggle" />
+              <span class="chave-trilho" aria-hidden="true"></span>
+              <span class="chave-txt">Corrigir pela inflação
+                <abbr title="IPCA acumulado até o último ano da pesquisa">(IPCA)</abbr>
+              </span>
+            </label>
+            <button id="limpar-filtros" class="btn-sec" type="button">Limpar filtros</button>
+          </div>
+        </div>
+
+        <div id="filtros-ativos" class="chips" hidden></div>
+        <div id="filtros" class="filtros"></div>
+      </section>
+
+      <!-- Tabela dinâmica -->
+      <section class="cartao">
+        <div class="cartao-topo">
+          <div class="cartao-titulo">
+            <h2>Tabela dinâmica</h2>
+            <p class="cartao-sub" id="pivot-sub">Agrupe por uma ou mais colunas e escolha a métrica.</p>
+          </div>
+          <div class="cartao-acoes">
+            <button id="baixar-pivot" class="btn-sec" type="button">Baixar CSV</button>
+          </div>
+        </div>
+
+        <div class="controles">
+          <label class="campo">
+            <span class="campo-rot">Linhas</span>
+            <select id="pv-linhas" multiple size="4"></select>
+            <span class="campo-dica">Ctrl/⌘ para várias</span>
+          </label>
+          <label class="campo">
+            <span class="campo-rot">Coluna</span>
+            <select id="pv-coluna"><option value="">(nenhuma)</option></select>
+          </label>
+          <label class="campo">
+            <span class="campo-rot">Valor</span>
+            <select id="pv-valor"><option value="">(contagem)</option></select>
+          </label>
+          <label class="campo">
+            <span class="campo-rot">Agregação</span>
+            <select id="pv-agg">
+              <option value="soma">Soma</option>
+              <option value="contagem">Contagem</option>
+              <option value="contagem_distinta">Contagem distinta</option>
+              <option value="media">Média</option>
+            </select>
+          </label>
+          <button id="gerar-pivot" class="btn-pri" type="button">Gerar</button>
+        </div>
+
+        <div class="tabela-wrap"><table id="pivot"></table></div>
+      </section>
+
+      <!-- Gráficos -->
+      <section class="cartao">
+        <div class="cartao-topo">
+          <div class="cartao-titulo">
+            <h2>Gráficos</h2>
+            <p class="cartao-sub">Até 3 de cada tipo, sobre os dados já filtrados.</p>
+          </div>
+          <div class="grafico-add">
+            <button class="btn-sec" data-tipo="linha" type="button">+ Linhas</button>
+            <button class="btn-sec" data-tipo="barra" type="button">+ Barras</button>
+            <button class="btn-sec" data-tipo="treemap" type="button">+ Tree map</button>
+            <button class="btn-sec" data-tipo="pizza" type="button">+ Pizza</button>
+          </div>
+        </div>
+        <div id="graficos"></div>
+        <p id="graficos-vazio" class="vazio">Nenhum gráfico ainda — escolha um tipo acima para começar.</p>
+      </section>
+    </section>
+  </main>
+
+  <script>window.PAINEL_TOKEN = "{{ token }}";</script>
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/hierarchy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/plugins/exporting.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/locales/pt_BR.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  <script src="{{ url_for('static', filename='painel.js', v=versao_estaticos) }}"></script>
+  <script src="{{ url_for('static', filename='painel_graficos.js', v=versao_estaticos) }}"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Dependências de runtime, com versão fixa. É este arquivo que o Dockerfile
+# instala — a imagem final não deve depender de resolução de versão.
+#
+# Para atualizar:  .venv/Scripts/pip install -U <pacote> && pip freeze
+#
+# As fases seguintes acrescentam aqui:
+#   Fase 2  google-genai, sqlglot, google-cloud-bigquery
+#   Fase 4  openpyxl        (planilha .xlsx da consulta)
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+pydantic==2.13.4
+pydantic-settings==2.15.0
+structlog==26.1.0
+# Catálogo de tabelas. `yaml.safe_load` sempre — o catálogo é versionado, mas
+# `load` executaria construtores arbitrários e não há motivo para essa porta.
+PyYAML==6.0.3
