@@ -23,3 +23,6 @@ Thumbs.db
 
 # Configuração de pré-visualização do Claude, com caminhos desta máquina.
 .claude/launch.json
+
+# Planilhas de trabalho grandes ficam só na máquina, fora do repositório.
+dados/escolas_2024.xlsx
