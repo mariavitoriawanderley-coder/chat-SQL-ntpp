@@ -79,6 +79,14 @@ de cada erro. Use a cada arquivo salvo.
 3. Troque para `status: ativo`. Só então a validação estrita entra e a tabela
    passa a aparecer no índice que o modelo lê.
 
+**Tabelas auxiliares.** Diretórios que só servem para trocar código por nome
+— municípios e CID-10 — ficam em
+[`src/app/catalog/_auxiliares.yaml`](src/app/catalog/_auxiliares.yaml). O SQL
+pode uni-los, mas o modelo nunca os escolhe como resposta. Para acrescentar
+outro, ele precisa ser pequeno e sem partição; tabela grande vai para o
+catálogo como as demais. Um teste confere que toda consulta de exemplo só cita
+tabelas do catálogo ou auxiliares.
+
 **Por que a validação é chata.** O que está no YAML é literalmente o que o
 modelo lê para decidir qual tabela usar e como escrever o SQL. Um resumo vago
 vira escolha errada de tabela; uma partição não declarada vira consulta que

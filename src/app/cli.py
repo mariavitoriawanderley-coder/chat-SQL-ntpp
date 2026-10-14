@@ -56,6 +56,13 @@ def validar_catalogo() -> int:
             print(f"    {t.area}/{t.id}")
         print("")
 
+    auxiliares = servico.auxiliares()
+    if auxiliares:
+        print(f"  Auxiliares ({len(auxiliares)}) — só para JOIN, nunca escolhidas:")
+        for a in auxiliares:
+            print(f"    {a.referencia_bigquery}")
+        print("")
+
     if not ativas:
         print(
             "  Nenhuma tabela ativa. A aplicação sobe, mas vai responder que não\n"

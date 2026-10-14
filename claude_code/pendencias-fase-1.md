@@ -26,12 +26,11 @@ Nove consultas de exemplo usam duas tabelas que não estão no catálogo:
 Fase 2 só aceita tabelas do catálogo, então essas consultas seriam
 rejeitadas.
 
-- [ ] 1.1 Decidir como aceitá-las. Há duas formas:
-  - (a) cadastrá-las como tabelas normais do catálogo, com área
-    "diretórios" e sem aparecer na escolha de tabela;
-  - (b) manter uma lista curta de "tabelas auxiliares" que o validador
-    aceita em JOIN.
-- [ ] 1.2 Aplicar a decisão e ajustar o validador e os testes.
+- [x] 1.1 Decidido em 14/10: lista curta de "tabelas auxiliares" que o
+      validador aceita em JOIN, em `src/app/catalog/_auxiliares.yaml`.
+- [x] 1.2 Aplicado: o catálogo carrega as auxiliares, elas entram na
+      whitelist e ficam fora do índice. Um teste confere que toda consulta
+      de exemplo só cita tabelas do catálogo ou auxiliares.
 
 ### 2. Filtro de partição na tabela de excluídas do CAGED
 

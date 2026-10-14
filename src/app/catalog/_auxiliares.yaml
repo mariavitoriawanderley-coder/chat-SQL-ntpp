@@ -1,0 +1,91 @@
+# TABELAS AUXILIARES — diretórios que o SQL pode unir, mas nunca escolher.
+#
+# Servem para trocar um código por um nome legível (município, doença). Não
+# entram no índice que o modelo lê para escolher a tabela da resposta; entram
+# na whitelist do validador, para o JOIN passar. São pequenas e sem partição.
+#
+# Metadados conferidos na API pública da Base dos Dados em 14/10/2026.
+# Depois de editar:  make validar-catalogo
+
+auxiliares:
+  - id: br_bd_diretorios_brasil__municipio
+    dataset_id: br_bd_diretorios_brasil
+    table_id: municipio
+    descricao: >
+      Diretório dos 5.571 municípios brasileiros, uma linha por município, com
+      nome, UF, região e os códigos usados por outros órgãos (TSE, Receita,
+      Banco Central).
+    como_unir: >
+      JOIN por `id_municipio` (código IBGE de 7 dígitos), que é único — não
+      precisa de DISTINCT. Use para mostrar o nome do município no resultado ou
+      para filtrar por região de saúde, microrregião ou capital.
+    colunas:
+      - nome: id_municipio
+        tipo: STRING
+        descricao: Código IBGE de 7 dígitos do município.
+      - nome: nome
+        tipo: STRING
+        descricao: Nome do município.
+      - nome: sigla_uf
+        tipo: STRING
+        descricao: Sigla da Unidade da Federação.
+      - nome: id_municipio_tse
+        tipo: STRING
+        descricao: Código do município no TSE, para unir com dados eleitorais.
+      - nome: capital_uf
+        tipo: INT64
+        descricao: Indica se o município é a capital do estado.
+        valores_exemplo: ["0", "1"]
+        nota: 1 = Capital; 0 = Não.
+      - nome: id_regiao_saude
+        tipo: STRING
+        descricao: Código da região de saúde.
+      - nome: nome_regiao_saude
+        tipo: STRING
+        descricao: Nome da região de saúde.
+      - nome: nome_microrregiao
+        tipo: STRING
+        descricao: Nome da microrregião do IBGE.
+      - nome: nome_mesorregiao
+        tipo: STRING
+        descricao: "Nome da mesorregião do IBGE (ex.: Agreste Pernambucano, Sertão Pernambucano)."
+      - nome: nome_regiao_metropolitana
+        tipo: STRING
+        descricao: Nome da região metropolitana, quando houver.
+
+  - id: br_bd_diretorios_brasil__cid_10
+    dataset_id: br_bd_diretorios_brasil
+    table_id: cid_10
+    descricao: >
+      Diretório da Classificação Internacional de Doenças (CID-10), com a
+      descrição de cada código em três níveis: subcategoria (4 caracteres),
+      categoria (3 caracteres) e capítulo.
+    como_unir: >
+      JOIN pela `subcategoria` com colunas de causa no formato de 4 caracteres
+      sem ponto (ex.: `causa_basica` do SIM). A tabela pode repetir códigos, por
+      isso una com uma subconsulta `SELECT DISTINCT subcategoria,
+      descricao_categoria ...` em vez da tabela inteira.
+    colunas:
+      - nome: subcategoria
+        tipo: STRING
+        descricao: "Código CID-10 de 4 caracteres, sem ponto (ex.: X954)."
+      - nome: descricao_subcategoria
+        tipo: STRING
+        descricao: Descrição da subcategoria (o código completo).
+      - nome: categoria
+        tipo: STRING
+        descricao: "Código CID-10 de 3 caracteres (ex.: X95)."
+      - nome: descricao_categoria
+        tipo: STRING
+        descricao: Descrição da categoria — o nível mais usado para listar causas de morte.
+      - nome: capitulo
+        tipo: STRING
+        descricao: Capítulo da CID-10 (grande grupo de doenças).
+      - nome: descricao_capitulo
+        tipo: STRING
+        descricao: "Descrição do capítulo (ex.: Causas externas de morbidade e mortalidade)."
+      - nome: causa_violencia
+        tipo: INT64
+        descricao: Indica se o código é de violência, segundo a lista da Base dos Dados.
+        valores_exemplo: ["0", "1"]
+        nota: 1 = Violência; 0 = Não.

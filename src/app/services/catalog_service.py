@@ -26,19 +26,22 @@ from pydantic import ValidationError
 
 from app.core.logging import obter_logger
 from app.domain.errors import CatalogoInvalido, RecursoNaoEncontrado
-from app.domain.table_meta import TableMeta
+from app.domain.table_meta import ArquivoAuxiliares, TabelaAuxiliar, TableMeta
 
 log = obter_logger("catalogo")
 
-# Arquivos que começam com `_` são documentação do formato, não cadastro.
+# Arquivos que começam com `_` não são cadastro de tabela: documentação do
+# formato (`_schema.yaml`) ou a lista de tabelas auxiliares, lida à parte.
 PREFIXO_IGNORADO = "_"
 EXTENSOES = (".yaml", ".yml")
+ARQUIVO_AUXILIARES = "_auxiliares.yaml"
 
 
 class ServicoCatalogo:
     def __init__(self, diretorio: Path) -> None:
         self._diretorio = diretorio
         self._tabelas: dict[str, TableMeta] = {}
+        self._auxiliares: dict[str, TabelaAuxiliar] = {}
         self._carregado = False
 
     # ─── Carga ────────────────────────────────────────────────────────
@@ -76,6 +79,19 @@ class ServicoCatalogo:
             tabelas[tabela.id] = tabela
             origem[tabela.id] = rotulo
 
+        auxiliares: dict[str, TabelaAuxiliar] = {}
+        try:
+            for aux in self._ler_auxiliares():
+                if aux.id in tabelas or aux.id in auxiliares:
+                    problemas.append(
+                        f"catalog/{ARQUIVO_AUXILIARES}: `{aux.id}` aparece duas vezes "
+                        "(ou também como tabela do catálogo). Deixe em um lugar só."
+                    )
+                    continue
+                auxiliares[aux.id] = aux
+        except CatalogoInvalido as e:
+            problemas.append(e.mensagem)
+
         if problemas:
             raise CatalogoInvalido(
                 "O catálogo tem cadastros inválidos e o serviço não pode subir.",
@@ -83,6 +99,7 @@ class ServicoCatalogo:
             )
 
         self._tabelas = dict(sorted(tabelas.items()))
+        self._auxiliares = dict(sorted(auxiliares.items()))
         self._carregado = True
 
         ativas = [t for t in self._tabelas.values() if not t.pendente]
@@ -91,7 +108,23 @@ class ServicoCatalogo:
             arquivos=len(self._tabelas),
             ativas=len(ativas),
             rascunhos=len(self._tabelas) - len(ativas),
+            auxiliares=len(self._auxiliares),
         )
+
+    def _ler_auxiliares(self) -> list[TabelaAuxiliar]:
+        """Tabelas de apoio (diretórios) que o SQL pode unir. Arquivo opcional."""
+        caminho = self._diretorio / ARQUIVO_AUXILIARES
+        if not caminho.is_file():
+            return []
+        rotulo = f"catalog/{ARQUIVO_AUXILIARES}"
+        try:
+            bruto = yaml.safe_load(caminho.read_text(encoding="utf-8"))
+        except yaml.YAMLError as e:
+            raise CatalogoInvalido(f"{rotulo}: o YAML não pôde ser lido. {_resumir_yaml(e)}") from e
+        try:
+            return ArquivoAuxiliares.model_validate(bruto).auxiliares
+        except ValidationError as e:
+            raise CatalogoInvalido(f"{rotulo}:\n{_formatar_erros(e)}") from e
 
     def _arquivos(self) -> list[Path]:
         return sorted(
@@ -176,13 +209,19 @@ class ServicoCatalogo:
             raise RecursoNaoEncontrado(f"Não existe tabela com o identificador `{id_tabela}`.")
         return tabela
 
+    def auxiliares(self) -> list[TabelaAuxiliar]:
+        """Diretórios que o SQL pode unir para trocar código por nome."""
+        return list(self._auxiliares.values())
+
     def whitelist(self) -> set[str]:
         """Referências `projeto.dataset.tabela` que o SQL pode citar.
 
         Base da validação da etapa 4 — qualquer outra tabela é rejeitada.
-        Só tabelas ativas entram: rascunho não deve chegar a uma consulta.
+        Entram as tabelas ativas (rascunho não deve chegar a uma consulta) e
+        as auxiliares, que só servem de JOIN e nunca são escolhidas sozinhas.
         """
-        return {t.referencia_bigquery for t in self.todas()}
+        ativas = {t.referencia_bigquery for t in self.todas()}
+        return ativas | {a.referencia_bigquery for a in self._auxiliares.values()}
 
     def por_area(self) -> dict[str, list[TableMeta]]:
         agrupado: dict[str, list[TableMeta]] = {}

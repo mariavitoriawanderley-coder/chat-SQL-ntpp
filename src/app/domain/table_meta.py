@@ -219,3 +219,41 @@ class TableMeta(BaseModel):
                 "escreva `sem_particao: true` — toda consulta a ela vai varrer a "
                 "tabela inteira, e isso precisa ser uma decisão, não um esquecimento."
             )
+
+
+class TabelaAuxiliar(BaseModel):
+    """Tabela de apoio que o SQL pode unir, mas que nunca responde sozinha.
+
+    São diretórios pequenos e sem partição — nomes de municípios, descrições
+    da CID-10 — que só existem para trocar um código por um nome legível.
+    Ficam fora do índice de seleção (o modelo não deve escolhê-las como
+    resposta) e dentro da whitelist do validador (o JOIN precisa passar).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    dataset_id: str
+    table_id: str
+    descricao: str
+    # Como unir: qual coluna desta tabela casa com qual coluna das outras.
+    # Vai ao modelo na etapa 3, junto das colunas.
+    como_unir: str
+    colunas: list[ColumnMeta] = Field(min_length=1)
+
+    @property
+    def referencia_bigquery(self) -> str:
+        return f"{PROJETO_BASE_DOS_DADOS}.{self.dataset_id}.{self.table_id}"
+
+    @model_validator(mode="after")
+    def _id_coerente(self) -> Self:
+        esperado = f"{self.dataset_id}__{self.table_id}"
+        if self.id != esperado:
+            raise ValueError(f"o `id` deveria ser `{esperado}`, e é `{self.id}`")
+        return self
+
+
+class ArquivoAuxiliares(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    auxiliares: list[TabelaAuxiliar]
