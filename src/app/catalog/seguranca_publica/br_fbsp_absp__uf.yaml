@@ -1,0 +1,190 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Segurança Pública e Defesa Social (CSPDS) — Crimes violentos
+# letais intencionais, Letalidade policial, Efetivo e estrutura; também Defesa
+# dos Direitos da Mulher — Feminicídio e violência letal.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_fbsp_absp__uf
+dataset_id: br_fbsp_absp
+table_id: uf
+nome_exibicao: Anuário Brasileiro de Segurança Pública — Estados
+area: seguranca_publica
+fonte: Fórum Brasileiro de Segurança Pública (FBSP)
+url_documentacao: https://basedosdados.org/dataset/9a2368e4-2fa6-4b42-88b7-026aa048f5ab?table=2c4a3d07-1789-41e3-bdb2-d37a6202a131
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Estatísticas criminais do Anuário Brasileiro de Segurança Pública, do Fórum
+  Brasileiro de Segurança Pública, compatibilizadas entre anos e agregadas por
+  unidade da federação. Reúne homicídios dolosos, latrocínios, mortes
+  violentas intencionais, feminicídios, estupros, mortes por intervenção
+  policial, policiais mortos, roubos e furtos de veículos, roubo de carga,
+  armas apreendidas, pessoas desaparecidas, população prisional e despesa
+  pública com segurança. Responde perguntas sobre violência letal,
+  letalidade policial e comparação entre estados ao longo do tempo.
+
+palavras_chave: [violência, homicídio, CVLI, feminicídio, estupro, latrocínio, letalidade policial, roubo, furto, segurança pública, população carcerária, arma de fogo]
+
+perguntas_exemplo:
+  - Quantos feminicídios foram registrados em Pernambuco por ano desde 2015?
+  - Como Pernambuco se compara aos demais estados do Nordeste em mortes violentas intencionais em 2021?
+  - Quantas mortes decorrentes de intervenção policial houve em Pernambuco em 2020?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por unidade da federação e ano.
+cobertura_temporal: { inicio: 2007, fim: 2021 }
+cobertura_geografica: estados e Distrito Federal (sem desagregação municipal)
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: []
+# Tabela minúscula (≈ 400 linhas), sem partição: varrer tudo custa nada.
+sem_particao: true
+volume_aproximado: 405 linhas
+observacoes: |
+  Os valores são CONTAGENS ABSOLUTAS; para taxas por 100 mil habitantes é
+  preciso cruzar com população, que não está nesta tabela.
+  Muitos indicadores só existem a partir de certos anos (o feminicídio, por
+  exemplo, a partir de 2015, quando a lei o tipificou) — anos anteriores vêm
+  nulos, o que não significa zero.
+  A série vai até 2021 na Base dos Dados; edições mais recentes do Anuário
+  ainda não foram incorporadas.
+  `despesa_empenhada_seguranca_publica` está em reais correntes, sem
+  correção inflacionária.
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência.
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    valores_exemplo: [PE, PB, AL, BA, CE]
+
+  - nome: quantidade_cvli
+    tipo: INT64
+    descricao: Crimes violentos letais intencionais (CVLI).
+
+  - nome: quantidade_morte_violenta_intencional
+    tipo: INT64
+    descricao: Mortes violentas intencionais (homicídio doloso + latrocínio + lesão seguida de morte + mortes por intervenção policial).
+
+  - nome: quantidade_ocorrencia_homicidio_doloso
+    tipo: INT64
+    descricao: Homicídios dolosos — número de ocorrências.
+
+  - nome: quantidade_vitima_homicidio_doloso
+    tipo: INT64
+    descricao: Homicídios dolosos — número de vítimas.
+
+  - nome: quantidade_feminicidio
+    tipo: INT64
+    descricao: Feminicídios.
+
+  - nome: quantidade_latrocinio
+    tipo: INT64
+    descricao: Latrocínios (roubo seguido de morte).
+
+  - nome: quantidade_lesao_corporal_seguida_de_morte
+    tipo: INT64
+    descricao: Lesões corporais seguidas de morte.
+
+  - nome: quantidade_morte_a_esclarecer
+    tipo: INT64
+    descricao: Mortes a esclarecer.
+
+  - nome: quantidade_morte_intervencao_policial_militar_servico
+    tipo: INT64
+    descricao: Mortes decorrentes de intervenção de policiais militares em serviço.
+
+  - nome: quantidade_morte_intervencao_policial_militar_fora_servico
+    tipo: INT64
+    descricao: Mortes decorrentes de intervenção de policiais militares fora de serviço.
+
+  - nome: quantidade_morte_intervencao_policial_civil_servico
+    tipo: INT64
+    descricao: Mortes decorrentes de intervenção de policiais civis em serviço.
+
+  - nome: quantidade_morte_intervencao_policial_civil_fora_servico
+    tipo: INT64
+    descricao: Mortes decorrentes de intervenção de policiais civis fora de serviço.
+
+  - nome: quantidade_policial_militar_morto_confronto_servico
+    tipo: INT64
+    descricao: Policiais militares mortos em confronto em serviço.
+
+  - nome: quantidade_policial_civil_morto_confronto_servico
+    tipo: INT64
+    descricao: Policiais civis mortos em confronto em serviço.
+
+  - nome: quantidade_suicidio
+    tipo: INT64
+    descricao: Suicídios.
+
+  - nome: quantidade_estupro
+    tipo: INT64
+    descricao: Estupros, incluindo estupro de vulnerável.
+
+  - nome: quantidade_tentativa_estupro
+    tipo: INT64
+    descricao: Tentativas de estupro.
+
+  - nome: quantidade_roubo_de_veiculo
+    tipo: INT64
+    descricao: Roubos de veículo.
+
+  - nome: quantidade_furto_veiculo
+    tipo: INT64
+    descricao: Furtos de veículo.
+
+  - nome: quantidade_roubo_carga
+    tipo: INT64
+    descricao: Roubos de carga.
+
+  - nome: quantidade_roubo_instituicao_financeira
+    tipo: INT64
+    descricao: Roubos a instituição financeira.
+
+  - nome: quantidade_arma_fogo_apreendida
+    tipo: INT64
+    descricao: Armas de fogo apreendidas.
+
+  - nome: quantidade_registro_pessoa_desaparecida
+    tipo: INT64
+    descricao: Registros de pessoas desaparecidas.
+
+  - nome: quantidade_populacao_sistema_penitenciario
+    tipo: INT64
+    descricao: População do sistema penitenciário.
+
+  - nome: despesa_empenhada_seguranca_publica
+    tipo: FLOAT64
+    descricao: Despesa empenhada na função Segurança Pública, em reais correntes.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Feminicídios em Pernambuco por ano.
+    sql: |
+      SELECT ano, quantidade_feminicidio
+      FROM `basedosdados.br_fbsp_absp.uf`
+      WHERE sigla_uf = 'PE'
+        AND quantidade_feminicidio IS NOT NULL
+      ORDER BY ano
+
+  - pergunta: Mortes violentas intencionais nos estados do Nordeste em 2021.
+    sql: |
+      SELECT sigla_uf, quantidade_morte_violenta_intencional
+      FROM `basedosdados.br_fbsp_absp.uf`
+      WHERE ano = 2021
+        AND sigla_uf IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE')
+      ORDER BY quantidade_morte_violenta_intencional DESC

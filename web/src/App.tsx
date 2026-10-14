@@ -98,12 +98,26 @@ const FAIXA_POR_AREA: Record<string, string> = {
   educacao: "bg-area-educacao",
   saude: "bg-area-saude",
   economia: "bg-area-economia",
+  seguranca_publica: "bg-area-seguranca-publica",
+  meio_ambiente: "bg-area-meio-ambiente",
+  agropecuaria: "bg-area-agropecuaria",
+  assistencia_social: "bg-area-assistencia-social",
+  financas_publicas: "bg-area-financas-publicas",
+  eleicoes: "bg-area-eleicoes",
+  ciencia_tecnologia: "bg-area-ciencia-tecnologia",
 };
 
 const NOME_AREA: Record<string, string> = {
   educacao: "Educação",
   saude: "Saúde",
   economia: "Economia",
+  seguranca_publica: "Segurança pública",
+  meio_ambiente: "Meio ambiente",
+  agropecuaria: "Agropecuária",
+  assistencia_social: "Assistência social",
+  financas_publicas: "Finanças públicas",
+  eleicoes: "Eleições",
+  ciencia_tecnologia: "Ciência e tecnologia",
 };
 
 function Catalogo({ estado }: { estado: Estado<IndiceCatalogo> }) {

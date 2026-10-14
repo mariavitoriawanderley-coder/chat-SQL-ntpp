@@ -1,0 +1,141 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Defesa do Consumidor (CDC) — Preços e cesta básica.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_anp_precos_combustiveis__microdados
+dataset_id: br_anp_precos_combustiveis
+table_id: microdados
+nome_exibicao: ANP — Preços de combustíveis nos postos
+area: economia
+fonte: Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP)
+url_documentacao: https://basedosdados.org/dataset/6ea3e28a-42be-401a-a066-ad87ca931e69?table=3a7cb29a-0bdf-4f44-bab1-d27872e565ff
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Série histórica do Levantamento de Preços de Combustíveis da ANP, com cada
+  preço coletado semanalmente em postos revendedores desde 2004. Traz o
+  posto (CNPJ, nome, bandeira, endereço), o município, a data da coleta, o
+  combustível — gasolina, gasolina aditivada, etanol, diesel, diesel S10,
+  GNV e GLP — e os preços de venda ao consumidor e de compra da
+  distribuidora. Responde perguntas sobre preço médio da gasolina ou do
+  etanol por cidade e estado, evolução dos preços ao longo do tempo,
+  diferença entre bandeiras e margem de revenda.
+
+palavras_chave: [combustível, gasolina, etanol, álcool, diesel, GNV, gás de cozinha, GLP, preço, posto, ANP, bandeira]
+
+perguntas_exemplo:
+  - Qual o preço médio da gasolina comum no Recife em cada mês de 2024?
+  - Como o preço do etanol em Pernambuco se comparou ao da Paraíba em 2023?
+  - Qual bandeira de posto praticou a gasolina mais cara em Caruaru em 2024?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por preço coletado — um posto, um combustível, uma data de coleta.
+cobertura_temporal: { inicio: 2004, fim: 2026 }
+cobertura_geografica: municípios cobertos pela pesquisa da ANP (cerca de 450 a 560, não todos os do país)
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano, sigla_uf]
+sem_particao: false
+volume_aproximado: 17.028.368 linhas
+observacoes: |
+  Na Base dos Dados a tabela também é particionada por `id_municipio`. Aqui só
+  `ano` e `sigla_uf` são obrigatórios, para não impedir consultas estaduais;
+  filtrar também pelo município, quando a pergunta for municipal, barateia a
+  consulta.
+  A pesquisa é amostral: só municípios e postos selecionados pela ANP entram,
+  e a amostra mudou ao longo dos anos. Preço médio aqui é média das coletas,
+  não média ponderada por volume vendido.
+  O GLP é preço do botijão de 13 kg; o GNV é por m³; os demais, por litro
+  (ver `unidade_medida`). `preco_compra` tem muitos nulos.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano da coleta.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da UF do posto pesquisado.
+    particao: true
+    valores_exemplo: [PE, PB, AL, BA, SP]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município do posto.
+
+  - nome: bairro_revenda
+    tipo: STRING
+    descricao: Bairro do posto.
+
+  - nome: cnpj_revenda
+    tipo: STRING
+    descricao: CNPJ do posto revendedor.
+
+  - nome: nome_estabelecimento
+    tipo: STRING
+    descricao: Nome do posto.
+
+  - nome: bandeira_revenda
+    tipo: STRING
+    descricao: Bandeira (distribuidora) do posto.
+    valores_exemplo: [BRANCA, VIBRA ENERGIA, IPIRANGA, RAIZEN]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: data_coleta
+    tipo: DATE
+    descricao: Data da coleta do preço.
+
+  - nome: produto
+    tipo: STRING
+    descricao: Combustível pesquisado.
+    valores_exemplo: [Gasolina, Gasolina Aditivada, Etanol, Diesel, Diesel S10, GNV, GLP]
+    nota: Conferir caixa e grafia com um SELECT DISTINCT antes de ativar.
+
+  - nome: unidade_medida
+    tipo: STRING
+    descricao: Unidade do preço (R$ por litro, por m³ ou por botijão de 13 kg).
+
+  - nome: preco_compra
+    tipo: FLOAT64
+    descricao: Preço de venda da distribuidora para o posto, em reais.
+
+  - nome: preco_venda
+    tipo: FLOAT64
+    descricao: Preço de venda ao consumidor final praticado pelo posto, em reais.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Preço médio mensal da gasolina no Recife em 2024.
+    sql: |
+      SELECT EXTRACT(MONTH FROM data_coleta) AS mes,
+             ROUND(AVG(preco_venda), 2) AS preco_medio
+      FROM `basedosdados.br_anp_precos_combustiveis.microdados`
+      WHERE ano = 2024
+        AND sigla_uf = 'PE'
+        AND id_municipio = '2611606'
+        AND produto = 'Gasolina'
+      GROUP BY mes
+      ORDER BY mes
+
+  - pergunta: Preço médio anual do etanol nos estados do Nordeste de 2020 a 2024.
+    sql: |
+      SELECT ano, sigla_uf, ROUND(AVG(preco_venda), 2) AS preco_medio
+      FROM `basedosdados.br_anp_precos_combustiveis.microdados`
+      WHERE ano BETWEEN 2020 AND 2024
+        AND sigla_uf IN ('AL','BA','CE','MA','PB','PE','PI','RN','SE')
+        AND produto = 'Etanol'
+      GROUP BY ano, sigla_uf
+      ORDER BY ano, sigla_uf

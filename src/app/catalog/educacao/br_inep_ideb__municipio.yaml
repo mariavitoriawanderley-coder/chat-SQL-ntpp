@@ -1,0 +1,139 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Educação, Cultura, Esporte e Lazer (CECEL) — Aprendizagem e
+# qualidade do ensino.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_inep_ideb__municipio
+dataset_id: br_inep_ideb
+table_id: municipio
+nome_exibicao: Ideb — Municípios
+area: educacao
+fonte: INEP
+url_documentacao: https://basedosdados.org/dataset/96eab476-5d30-459b-82be-f888d4d0d6b9?table=8873f899-fdca-4ae4-808a-cdaaa1735d6a
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Índice de Desenvolvimento da Educação Básica (Ideb), calculado pelo INEP a
+  cada dois anos, agregado por município, rede de ensino e etapa (anos
+  iniciais e finais do ensino fundamental e ensino médio). Traz o Ideb
+  observado, a meta projetada, a taxa de aprovação e as notas do Saeb em
+  matemática e língua portuguesa. Responde perguntas sobre a qualidade do
+  ensino nas redes municipal e estadual, cumprimento de metas e evolução do
+  desempenho escolar dos municípios.
+
+palavras_chave: [Ideb, qualidade da educação, Saeb, nota, desempenho escolar, aprovação, meta, rede municipal, rede estadual, ensino fundamental, ensino médio]
+
+perguntas_exemplo:
+  - Qual o Ideb dos anos iniciais da rede municipal de cada município de Pernambuco em 2023?
+  - Quais municípios de Pernambuco atingiram a meta do Ideb em 2021?
+  - Como evoluiu o Ideb do ensino médio da rede estadual no Recife desde 2017?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por município, rede, etapa de ensino (anos escolares) e ano de avaliação.
+cobertura_temporal: { inicio: 2005, fim: 2025 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: []
+# Tabela pequena (≈ 365 mil linhas) e sem partição na Base dos Dados:
+# a varredura completa custa pouco.
+sem_particao: true
+volume_aproximado: 364.673 linhas
+observacoes: |
+  O Ideb é bienal: só existem anos ímpares (2005, 2007, ..., 2023). Em 2021 a
+  pandemia afetou aprovação e participação no Saeb; o INEP recomenda cautela
+  na comparação com anos anteriores.
+  `projecao` é a meta do município para aquele ano; anos sem meta vêm nulos.
+  Municípios sem participação mínima no Saeb ficam sem Ideb (nulo).
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano da avaliação (bienal, anos ímpares).
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    valores_exemplo: [PE, PB, AL, BA]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+
+  - nome: rede
+    tipo: STRING
+    descricao: Rede escolar.
+    valores_exemplo: [municipal, estadual, publica, federal, privada]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: ensino
+    tipo: STRING
+    descricao: Etapa de ensino.
+    valores_exemplo: [fundamental, medio]
+
+  - nome: anos_escolares
+    tipo: STRING
+    descricao: Segmento avaliado dentro da etapa.
+    valores_exemplo: [iniciais (1-5), finais (6-9), todos (1-4)]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: taxa_aprovacao
+    tipo: FLOAT64
+    descricao: Taxa de aprovação (%) do segmento.
+
+  - nome: indicador_rendimento
+    tipo: FLOAT64
+    descricao: Indicador de rendimento (P), entre 0 e 1.
+
+  - nome: nota_saeb_matematica
+    tipo: FLOAT64
+    descricao: Nota média no Saeb em matemática.
+
+  - nome: nota_saeb_lingua_portuguesa
+    tipo: FLOAT64
+    descricao: Nota média no Saeb em língua portuguesa.
+
+  - nome: nota_saeb_media_padronizada
+    tipo: FLOAT64
+    descricao: Nota média padronizada do Saeb (N), entre 0 e 10.
+
+  - nome: ideb
+    tipo: FLOAT64
+    descricao: Ideb observado (N × P), entre 0 e 10.
+
+  - nome: projecao
+    tipo: FLOAT64
+    descricao: Meta (projeção) do Ideb para o município, rede e ano.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Ideb dos anos iniciais da rede municipal nos municípios de Pernambuco em 2023, comparado à meta.
+    sql: |
+      SELECT id_municipio, ideb, projecao, ideb >= projecao AS atingiu_meta
+      FROM `basedosdados.br_inep_ideb.municipio`
+      WHERE ano = 2023
+        AND sigla_uf = 'PE'
+        AND rede = 'municipal'
+        AND anos_escolares = 'iniciais (1-5)'
+      ORDER BY ideb DESC
+
+  - pergunta: Evolução do Ideb médio dos anos finais por rede em Pernambuco.
+    sql: |
+      SELECT ano, rede, ROUND(AVG(ideb), 2) AS ideb_medio
+      FROM `basedosdados.br_inep_ideb.municipio`
+      WHERE sigla_uf = 'PE'
+        AND anos_escolares = 'finais (6-9)'
+      GROUP BY ano, rede
+      ORDER BY ano, rede

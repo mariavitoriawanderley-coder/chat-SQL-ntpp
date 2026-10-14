@@ -8,7 +8,9 @@
 #  COMO CADASTRAR UMA TABELA
 #
 #    1. Copie este arquivo para `<area>/<id>.yaml`, onde:
-#         area = educacao | saude | economia   (a pasta precisa bater com o campo)
+#         area = educacao | saude | economia | seguranca_publica | meio_ambiente |
+#                agropecuaria | assistencia_social | financas_publicas | eleicoes |
+#                ciencia_tecnologia   (a pasta precisa bater com o campo)
 #         id   = <dataset_id>__<table_id>      (o nome do arquivo precisa bater com o campo)
 #    2. Preencha os campos. Deixe `status: rascunho` enquanto trabalha.
 #    3. Rode `make validar-catalogo` — ele aponta arquivo e campo de cada erro.
@@ -31,7 +33,7 @@ id: br_inep_censo_escolar__matricula     # obrigatório · = dataset_id + "__" +
 dataset_id: br_inep_censo_escolar        # obrigatório · dataset no BigQuery
 table_id: matricula                      # obrigatório · tabela no BigQuery
 nome_exibicao: Censo Escolar — Matrículas  # obrigatório · o que o usuário lê na tela
-area: educacao                           # obrigatório · educacao | saude | economia
+area: educacao                           # obrigatório · uma das áreas listadas no topo
 fonte: INEP                              # obrigatório · quem produz o dado
 url_documentacao: https://basedosdados.org/dataset/...   # opcional
 

@@ -1,0 +1,104 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Ciência, Tecnologia e Inovação (CCTI) — Conectividade e
+# inclusão digital; também Defesa do Consumidor — Telecomunicações.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_anatel_banda_larga_fixa__densidade_municipio
+dataset_id: br_anatel_banda_larga_fixa
+table_id: densidade_municipio
+nome_exibicao: Anatel — Densidade de banda larga fixa por município
+area: ciencia_tecnologia
+fonte: Agência Nacional de Telecomunicações (Anatel)
+url_documentacao: https://basedosdados.org/dataset/4ba41417-ba19-4022-bc24-6837db973009?table=4f0e4223-756b-4724-99f6-7555fbb19a4c
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Densidade de acessos de banda larga fixa (internet residencial por cabo,
+  fibra, rádio etc.) em cada município brasileiro, medida mensalmente pela
+  Anatel desde março de 2007 como número de acessos por 100 domicílios.
+  É o indicador oficial de penetração da internet fixa. Responde perguntas
+  sobre conectividade e inclusão digital nos municípios, desigualdade de
+  acesso à internet entre cidades e evolução da cobertura de banda larga.
+
+palavras_chave: [internet, banda larga, conectividade, inclusão digital, acesso à internet, fibra óptica, Anatel, telecomunicações, densidade]
+
+perguntas_exemplo:
+  - Quais municípios de Pernambuco têm a menor densidade de banda larga fixa?
+  - Como evoluiu o acesso à banda larga fixa no Sertão pernambucano desde 2015?
+  - Qual a densidade de banda larga do Recife comparada à média de Pernambuco em 2024?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por município, ano e mês.
+cobertura_temporal: { inicio: 2007, fim: 2026 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: []
+# Tabela estreita (5 colunas, ≈ 1,1 milhão de linhas) e sem partição na
+# Base dos Dados: a varredura completa fica na casa de poucas dezenas de MB.
+sem_particao: true
+volume_aproximado: 1.105.770 linhas
+observacoes: |
+  `densidade` é acessos por 100 domicílios — pode passar de 100 em municípios
+  com muitas empresas ou segundas residências. NÃO tire média simples entre
+  municípios para obter a densidade do estado: a média não pondera pelo
+  número de domicílios. Para o estado, existe a tabela
+  `br_anatel_banda_larga_fixa.densidade_uf` (ainda fora do catálogo).
+  Para um valor anual, use o mês de dezembro (ou o último mês disponível)
+  em vez de somar meses.
+  O número absoluto de acessos, por tecnologia e empresa, está em
+  `br_anatel_banda_larga_fixa.microdados` (ainda fora do catálogo).
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência.
+
+  - nome: mes
+    tipo: INT64
+    descricao: Mês de referência (1 a 12).
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    valores_exemplo: [PE, PB, AL, BA]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+
+  - nome: densidade
+    tipo: FLOAT64
+    descricao: Acessos de banda larga fixa por 100 domicílios.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Densidade de banda larga fixa nos municípios de Pernambuco em dezembro de 2024, da menor para a maior.
+    sql: |
+      SELECT id_municipio, densidade
+      FROM `basedosdados.br_anatel_banda_larga_fixa.densidade_municipio`
+      WHERE ano = 2024
+        AND mes = 12
+        AND sigla_uf = 'PE'
+      ORDER BY densidade ASC
+
+  - pergunta: Evolução da densidade de banda larga no Recife em dezembro de cada ano desde 2015.
+    sql: |
+      SELECT ano, densidade
+      FROM `basedosdados.br_anatel_banda_larga_fixa.densidade_municipio`
+      WHERE ano >= 2015
+        AND mes = 12
+        AND id_municipio = '2611606'
+      ORDER BY ano

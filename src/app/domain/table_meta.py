@@ -14,7 +14,18 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-Area = Literal["educacao", "saude", "economia"]
+Area = Literal[
+    "educacao",
+    "saude",
+    "economia",
+    "seguranca_publica",
+    "meio_ambiente",
+    "agropecuaria",
+    "assistencia_social",
+    "financas_publicas",
+    "eleicoes",
+    "ciencia_tecnologia",
+]
 
 # `rascunho` é o gabarito recém-criado, ainda com TODO nos campos. Ele é
 # validado na estrutura mas fica FORA do índice que vai ao modelo — o que

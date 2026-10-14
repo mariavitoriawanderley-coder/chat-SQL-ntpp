@@ -30,6 +30,13 @@
   --color-area-educacao: #1f4e9c;
   --color-area-saude: #2e6b52;
   --color-area-economia: #d9a404;
+  --color-area-seguranca-publica: #b8352c;
+  --color-area-meio-ambiente: #4f7a3a;
+  --color-area-agropecuaria: #8a6d1f;
+  --color-area-assistencia-social: #7a4e8c;
+  --color-area-financas-publicas: #5b5f63;
+  --color-area-eleicoes: #2b6f8a;
+  --color-area-ciencia-tecnologia: #3d3f9e;
 
   /* ─── Tipografia ───────────────────────────────────────────────────
      Três famílias, dois pesos cada, sem exceção. */

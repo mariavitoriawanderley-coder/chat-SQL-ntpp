@@ -1,0 +1,134 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Assuntos Municipais (CAM) — Finanças municipais; também
+# Administração Pública (CAP) — Planejamento e ações de governo.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_me_siconfi__municipio_despesas_funcao
+dataset_id: br_me_siconfi
+table_id: municipio_despesas_funcao
+nome_exibicao: SICONFI — Despesas municipais por função
+area: financas_publicas
+fonte: Secretaria do Tesouro Nacional (STN)
+url_documentacao: https://basedosdados.org/dataset/5a3dec52-8740-460e-b31d-0e0347979da0?table=1f2cf310-77c2-45dd-8a10-d10078f1def0
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Despesas orçamentárias dos municípios brasileiros por função e subfunção de
+  governo (saúde, educação, assistência social, urbanismo, segurança etc.),
+  declaradas pelas prefeituras ao Tesouro Nacional no SICONFI e, antes dele,
+  no FINBRA. Para cada município, ano, conta e estágio da despesa
+  (empenhada, liquidada, paga) traz o valor em reais. Responde perguntas
+  sobre quanto cada prefeitura gastou em saúde ou educação, comparação de
+  gastos entre municípios e evolução da despesa pública municipal.
+
+palavras_chave: [despesa municipal, gasto público, prefeitura, orçamento, função de governo, saúde, educação, SICONFI, FINBRA, Tesouro Nacional, empenho, finanças municipais]
+
+perguntas_exemplo:
+  - Quanto cada prefeitura de Pernambuco gastou com saúde em 2023?
+  - Como evoluiu a despesa com educação da Prefeitura do Recife entre 2015 e 2024?
+  - Quais municípios de Pernambuco mais gastaram com assistência social em 2022?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por município, ano, estágio da despesa e conta (função ou subfunção).
+cobertura_temporal: { inicio: 1996, fim: 2025 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano]
+sem_particao: false
+volume_aproximado: 22.098.549 linhas
+observacoes: |
+  A tabela é particionada só por `ano`; filtrar por `sigla_uf` reduz o
+  resultado, mas não o volume lido.
+  As contas são HIERÁRQUICAS: a função (ex.: "10 - Saúde") e suas
+  subfunções (ex.: "10.301 - Atenção Básica") aparecem em linhas separadas.
+  Somar tudo duplica valores — filtre o nível desejado. Use as colunas
+  padronizadas pela Base dos Dados (`estagio_bd`, `id_conta_bd`,
+  `conta_bd`), que são comparáveis entre anos; `conta` e `estagio` trazem o
+  texto original, que muda de portaria para portaria.
+  Para não somar estágios diferentes, filtre SEMPRE um estágio
+  (empenhada, liquidada ou paga). Valores em reais correntes.
+  Municípios que não entregaram a declaração no ano ficam ausentes.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano do exercício.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    valores_exemplo: [PE, PB, AL, BA]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+
+  - nome: estagio
+    tipo: STRING
+    descricao: Estágio da despesa, como declarado na fonte.
+
+  - nome: portaria
+    tipo: STRING
+    descricao: Portaria da STN que define o plano de contas do ano.
+
+  - nome: conta
+    tipo: STRING
+    descricao: Conta (função ou subfunção), como declarada na fonte.
+
+  - nome: estagio_bd
+    tipo: STRING
+    descricao: Estágio da despesa padronizado pela Base dos Dados.
+    valores_exemplo: [Despesas Empenhadas, Despesas Liquidadas, Despesas Pagas]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: id_conta_bd
+    tipo: STRING
+    descricao: "Código da conta padronizado pela Base dos Dados (ex.: 10 = Saúde, 12 = Educação; com ponto, subfunção)."
+    valores_exemplo: ['10', '12', '08', '10.301']
+
+  - nome: conta_bd
+    tipo: STRING
+    descricao: Nome da conta padronizado pela Base dos Dados.
+    valores_exemplo: [Saúde, Educação, Assistência Social, Urbanismo]
+
+  - nome: valor
+    tipo: FLOAT64
+    descricao: Valor da despesa, em reais correntes.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Despesa empenhada com saúde por município de Pernambuco em 2023.
+    sql: |
+      SELECT id_municipio, SUM(valor) AS despesa_saude
+      FROM `basedosdados.br_me_siconfi.municipio_despesas_funcao`
+      WHERE ano = 2023
+        AND sigla_uf = 'PE'
+        AND estagio_bd = 'Despesas Empenhadas'
+        AND id_conta_bd = '10'
+      GROUP BY id_municipio
+      ORDER BY despesa_saude DESC
+
+  - pergunta: Despesa paga com educação pela Prefeitura do Recife, 2015 a 2024.
+    sql: |
+      SELECT ano, SUM(valor) AS despesa_educacao
+      FROM `basedosdados.br_me_siconfi.municipio_despesas_funcao`
+      WHERE ano BETWEEN 2015 AND 2024
+        AND id_municipio = '2611606'
+        AND estagio_bd = 'Despesas Pagas'
+        AND id_conta_bd = '12'
+      GROUP BY ano
+      ORDER BY ano

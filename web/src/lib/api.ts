@@ -65,7 +65,17 @@ export type Saude = {
   tabelas_rascunho: number;
 };
 
-export type Area = "educacao" | "saude" | "economia";
+export type Area =
+  | "educacao"
+  | "saude"
+  | "economia"
+  | "seguranca_publica"
+  | "meio_ambiente"
+  | "agropecuaria"
+  | "assistencia_social"
+  | "financas_publicas"
+  | "eleicoes"
+  | "ciencia_tecnologia";
 
 /** Item do índice do catálogo — sem colunas, de propósito. */
 export type ResumoTabela = {

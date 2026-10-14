@@ -1,0 +1,119 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Meio Ambiente, Sustentabilidade e Proteção Animal (CMASPA) —
+# Cobertura vegetal e desmatamento.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_inpe_prodes__municipio_bioma
+dataset_id: br_inpe_prodes
+table_id: municipio_bioma
+nome_exibicao: PRODES — Desmatamento por município e bioma
+area: meio_ambiente
+fonte: Instituto Nacional de Pesquisas Espaciais (INPE)
+url_documentacao: https://basedosdados.org/dataset/e5c87240-ecce-4856-97c5-e6b84984bf42?table=d7a76d45-c363-4494-826d-1580e997ebf0
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Dados do PRODES, o monitoramento por satélite do desmatamento feito pelo
+  INPE, consolidados por município e bioma a partir de 2000. Para cada ano
+  informa a área total do bioma no município, a área desmatada acumulada, a
+  vegetação natural remanescente, as áreas naturalmente não florestais e a
+  hidrografia. Responde perguntas sobre quanto da Caatinga ou da Mata
+  Atlântica já foi desmatado em cada município, evolução do desmatamento e
+  remanescentes de vegetação nativa.
+
+palavras_chave: [desmatamento, vegetação nativa, PRODES, INPE, bioma, Caatinga, Mata Atlântica, Amazônia, Cerrado, cobertura vegetal, floresta]
+
+perguntas_exemplo:
+  - Quanto da Caatinga já foi desmatado em cada município de Pernambuco em 2023?
+  - Como evoluiu a área desmatada da Mata Atlântica em Pernambuco desde 2000?
+  - Quais municípios de Pernambuco têm o menor percentual de vegetação natural remanescente?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por município, bioma e ano.
+cobertura_temporal: { inicio: 2000, fim: 2023 }
+cobertura_geografica: nacional, com desagregação municipal; um município pode ter mais de um bioma
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano]
+sem_particao: false
+volume_aproximado: 156.864 linhas
+observacoes: |
+  A tabela NÃO tem `sigla_uf`. Para filtrar um estado, use o prefixo do código
+  IBGE do município: os dois primeiros dígitos de `id_municipio` são o código
+  da UF (Pernambuco = '26'), ex.: `STARTS_WITH(id_municipio, '26')`.
+  `desmatado` é a área desmatada ACUMULADA até o ano, não o incremento anual;
+  para o desmatamento de um ano, subtraia o valor do ano anterior.
+  Áreas em km², conforme a metodologia do PRODES (conferir na documentação).
+  A série histórica completa da Amazônia começa antes de 2000, mas nesta
+  tabela todos os biomas partem de 2000.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano de referência do mapeamento.
+    particao: true
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município. Os dois primeiros dígitos identificam a UF (26 = PE).
+
+  - nome: bioma
+    tipo: STRING
+    descricao: Bioma.
+    valores_exemplo: [Caatinga, Mata Atlântica, Amazônia, Cerrado, Pampa, Pantanal]
+    nota: Conferir caixa e acentuação com um SELECT DISTINCT antes de ativar.
+
+  - nome: area_total
+    tipo: INT64
+    descricao: Área total do bioma no município.
+
+  - nome: desmatado
+    tipo: FLOAT64
+    descricao: Área desmatada acumulada até o ano.
+
+  - nome: vegetacao_natural
+    tipo: FLOAT64
+    descricao: Área de vegetação natural remanescente.
+
+  - nome: nao_vegetacao_natural
+    tipo: FLOAT64
+    descricao: Área naturalmente não florestal (não vegetação natural).
+
+  - nome: hidrografia
+    tipo: FLOAT64
+    descricao: Área de hidrografia.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Percentual desmatado da Caatinga em cada município de Pernambuco em 2023.
+    sql: |
+      SELECT id_municipio,
+             desmatado,
+             area_total,
+             ROUND(100 * desmatado / area_total, 1) AS pct_desmatado
+      FROM `basedosdados.br_inpe_prodes.municipio_bioma`
+      WHERE ano = 2023
+        AND STARTS_WITH(id_municipio, '26')
+        AND bioma = 'Caatinga'
+      ORDER BY pct_desmatado DESC
+
+  - pergunta: Área desmatada acumulada por bioma em Pernambuco, 2010 a 2023.
+    sql: |
+      SELECT ano, bioma, ROUND(SUM(desmatado), 1) AS desmatado_acumulado
+      FROM `basedosdados.br_inpe_prodes.municipio_bioma`
+      WHERE ano BETWEEN 2010 AND 2023
+        AND STARTS_WITH(id_municipio, '26')
+      GROUP BY ano, bioma
+      ORDER BY ano, bioma

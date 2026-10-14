@@ -1,0 +1,158 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Cidadania, Direitos Humanos e Participação Popular (CCDHPP) —
+# Participação política e eleitoral; também Defesa dos Direitos da Mulher —
+# Mulheres na política.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_tse_eleicoes__resultados_candidato_municipio
+dataset_id: br_tse_eleicoes
+table_id: resultados_candidato_municipio
+nome_exibicao: Eleições — Votos por candidato e município
+area: eleicoes
+fonte: Tribunal Superior Eleitoral (TSE)
+url_documentacao: https://basedosdados.org/dataset/eef764df-bde8-4905-b115-6fc23b6ba9d6?table=74197311-35e3-4800-88ea-e0eec2b1b764
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Resultados oficiais das eleições brasileiras, publicados pelo TSE, com a
+  votação de cada candidato em cada município, de 1994 em diante — eleições
+  gerais (presidente, governador, senador, deputados federal e estadual) e
+  municipais (prefeito e vereador), em primeiro e segundo turno. Traz cargo,
+  partido, número do candidato, situação final (eleito, não eleito,
+  suplente) e total de votos. Responde perguntas sobre quem venceu em cada
+  cidade, votação de candidatos e partidos por município e distribuição
+  territorial do voto.
+
+palavras_chave: [eleição, votos, votação, candidato, partido, prefeito, vereador, governador, deputado, senador, presidente, TSE, eleito]
+
+perguntas_exemplo:
+  - Quantos votos cada candidato a governador teve em cada município de Pernambuco em 2022?
+  - Quais partidos elegeram mais prefeitos em Pernambuco em 2024?
+  - Em quais municípios pernambucanos o deputado estadual mais votado de 2022 teve mais votos?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por candidato, município, turno e eleição.
+cobertura_temporal: { inicio: 1994, fim: 2026 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano, sigla_uf]
+sem_particao: false
+volume_aproximado: 37.709.247 linhas
+observacoes: |
+  A tabela NÃO traz o nome do candidato. Para nomes, junte com
+  `basedosdados.br_tse_eleicoes.candidatos` por `ano`, `sigla_uf`,
+  `sequencial_candidato` — essa tabela ainda não está no catálogo, então
+  responda com número e partido ou avise o usuário.
+  Eleições gerais acontecem em anos pares não múltiplos de 4 (2018, 2022);
+  municipais, em anos múltiplos de 4 (2016, 2020, 2024). Para presidente, a
+  UF é a do município de votação; votos no exterior aparecem com sigla
+  própria (ZZ).
+  Filtre SEMPRE o `turno` e o `cargo`: sem isso, somam-se votos de turnos e
+  cargos diferentes. Para eleições suplementares, use `tipo_eleicao`.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano da eleição.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    particao: true
+    valores_exemplo: [PE, PB, AL, BA, ZZ]
+
+  - nome: turno
+    tipo: INT64
+    descricao: Turno da eleição (1 ou 2).
+    valores_exemplo: [1, 2]
+
+  - nome: id_eleicao
+    tipo: STRING
+    descricao: Identificador da eleição no TSE.
+
+  - nome: tipo_eleicao
+    tipo: STRING
+    descricao: Tipo da eleição (ordinária ou suplementar).
+    valores_exemplo: [eleicao ordinaria, eleicao suplementar]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: data_eleicao
+    tipo: DATE
+    descricao: Data da eleição.
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+
+  - nome: id_municipio_tse
+    tipo: STRING
+    descricao: Código do município no TSE.
+
+  - nome: cargo
+    tipo: STRING
+    descricao: Cargo disputado, em minúsculas e sem acento.
+    valores_exemplo: [presidente, governador, senador, deputado federal, deputado estadual, prefeito, vereador]
+
+  - nome: numero_partido
+    tipo: STRING
+    descricao: Número do partido.
+
+  - nome: sigla_partido
+    tipo: STRING
+    descricao: Sigla do partido.
+    valores_exemplo: [PSB, PT, PL, MDB, PSDB, UNIAO]
+
+  - nome: sequencial_candidato
+    tipo: STRING
+    descricao: Sequencial do candidato no TSE — chave para juntar com a tabela de candidatos.
+
+  - nome: numero_candidato
+    tipo: STRING
+    descricao: Número do candidato na urna.
+
+  - nome: resultado
+    tipo: STRING
+    descricao: Situação final do candidato no turno.
+    valores_exemplo: [eleito, nao eleito, suplente, eleito por qp, eleito por media, 2o turno]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: votos
+    tipo: INT64
+    descricao: Número de votos do candidato no município.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Votos por candidato a governador em cada município de Pernambuco no 1º turno de 2022.
+    sql: |
+      SELECT id_municipio, numero_candidato, sigla_partido, votos
+      FROM `basedosdados.br_tse_eleicoes.resultados_candidato_municipio`
+      WHERE ano = 2022
+        AND sigla_uf = 'PE'
+        AND cargo = 'governador'
+        AND turno = 1
+      ORDER BY id_municipio, votos DESC
+
+  - pergunta: Prefeitos eleitos por partido em Pernambuco em 2024.
+    sql: |
+      SELECT sigla_partido, COUNT(DISTINCT id_municipio) AS prefeituras
+      FROM `basedosdados.br_tse_eleicoes.resultados_candidato_municipio`
+      WHERE ano = 2024
+        AND sigla_uf = 'PE'
+        AND cargo = 'prefeito'
+        AND resultado = 'eleito'
+      GROUP BY sigla_partido
+      ORDER BY prefeituras DESC

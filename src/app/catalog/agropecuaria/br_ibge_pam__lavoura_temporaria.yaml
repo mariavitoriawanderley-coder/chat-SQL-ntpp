@@ -1,0 +1,125 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Agricultura, Pecuária e Desenvolvimento Rural (CAPDR) —
+# Produção agrícola.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_ibge_pam__lavoura_temporaria
+dataset_id: br_ibge_pam
+table_id: lavoura_temporaria
+nome_exibicao: PAM — Lavouras temporárias
+area: agropecuaria
+fonte: IBGE
+url_documentacao: https://basedosdados.org/dataset/fc403b40-a7e1-40e7-9efe-910847b45a69?table=1fd6598f-2dfa-4f26-94bb-0d6bd4a4c873
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Produção Agrícola Municipal (PAM) do IBGE para as lavouras temporárias —
+  culturas replantadas a cada safra, como cana-de-açúcar, mandioca, milho,
+  feijão, arroz, soja, tomate, melancia, cebola e algodão. Para cada
+  município, ano e produto traz área plantada, área colhida, quantidade
+  produzida, rendimento médio e valor da produção. Responde perguntas sobre
+  quanto cada município produz de cada cultura, principais produtores do
+  estado, evolução da safra e valor da produção agrícola.
+
+palavras_chave: [agricultura, safra, produção agrícola, lavoura, cana-de-açúcar, mandioca, milho, feijão, área plantada, área colhida, PAM, IBGE]
+
+perguntas_exemplo:
+  - Quais os maiores produtores de cana-de-açúcar de Pernambuco em 2023?
+  - Como evoluiu a produção de feijão em Pernambuco desde 2010?
+  - Qual o valor da produção de mandioca no Agreste pernambucano em 2022?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por município, produto e ano.
+cobertura_temporal: { inicio: 1974, fim: 2024 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano, sigla_uf]
+sem_particao: false
+volume_aproximado: 9.362.529 linhas
+observacoes: |
+  Na Base dos Dados a tabela também é particionada por `id_municipio`. Aqui só
+  `ano` e `sigla_uf` são obrigatórios, para não impedir consultas estaduais.
+  `quantidade_produzida` foi convertida para TONELADAS e `valor_producao`
+  para MIL REAIS correntes (sem correção pela inflação); antes de 1994 os
+  valores estão nas moedas da época e não são comparáveis.
+  Valores "...", ".." e "-" da fonte viram nulo. Linhas de produtos não
+  cultivados no município costumam vir com área e produção nulas ou zero.
+  Lavouras permanentes (café, banana, coco, manga, uva etc.) estão em outra
+  tabela, `br_ibge_pam.lavoura_permanente`.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano da safra.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da unidade da federação.
+    particao: true
+    valores_exemplo: [PE, PB, AL, BA]
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município.
+
+  - nome: produto
+    tipo: STRING
+    descricao: Cultura agrícola temporária.
+    valores_exemplo: [Cana-de-açúcar, Mandioca, Milho (em grão), Feijão (em grão), Tomate, Melancia]
+    nota: Conferir a grafia exata com um SELECT DISTINCT antes de ativar.
+
+  - nome: area_plantada
+    tipo: INT64
+    descricao: Área plantada ou destinada à colheita, em hectares.
+
+  - nome: area_colhida
+    tipo: INT64
+    descricao: Área colhida, em hectares.
+
+  - nome: quantidade_produzida
+    tipo: FLOAT64
+    descricao: Quantidade produzida, em toneladas.
+
+  - nome: rendimento_medio_producao
+    tipo: FLOAT64
+    descricao: Rendimento médio da produção, em toneladas por hectare.
+
+  - nome: valor_producao
+    tipo: FLOAT64
+    descricao: Valor da produção, em mil reais correntes.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Dez maiores produtores de cana-de-açúcar de Pernambuco em 2023.
+    sql: |
+      SELECT id_municipio, quantidade_produzida, valor_producao
+      FROM `basedosdados.br_ibge_pam.lavoura_temporaria`
+      WHERE ano = 2023
+        AND sigla_uf = 'PE'
+        AND produto = 'Cana-de-açúcar'
+      ORDER BY quantidade_produzida DESC
+      LIMIT 10
+
+  - pergunta: Produção total de feijão em Pernambuco por ano, 2010 a 2024.
+    sql: |
+      SELECT ano, SUM(quantidade_produzida) AS toneladas
+      FROM `basedosdados.br_ibge_pam.lavoura_temporaria`
+      WHERE ano BETWEEN 2010 AND 2024
+        AND sigla_uf = 'PE'
+        AND produto = 'Feijão (em grão)'
+      GROUP BY ano
+      ORDER BY ano

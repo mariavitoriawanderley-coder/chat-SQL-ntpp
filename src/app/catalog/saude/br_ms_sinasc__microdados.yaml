@@ -1,0 +1,220 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Saúde e Assistência Social (CSAS) — Mortalidade geral,
+# infantil e materna; também Defesa dos Direitos da Mulher — Saúde da mulher.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_ms_sinasc__microdados
+dataset_id: br_ms_sinasc
+table_id: microdados
+nome_exibicao: SINASC — Nascidos vivos
+area: saude
+fonte: Ministério da Saúde
+url_documentacao: https://basedosdados.org/dataset/48ccef51-8207-40ee-af5b-134c8ac3fb8c?table=80359f9a-8189-4693-bdf7-ebf7be0d2fff
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Microdados do Sistema de Informações sobre Nascidos Vivos (SINASC), do
+  Ministério da Saúde, a partir da Declaração de Nascido Vivo preenchida em
+  todo parto no país desde 1994. Cada linha é um nascimento, com local e
+  estabelecimento do parto, peso, Apgar, semanas de gestação, tipo de parto,
+  consultas de pré-natal e o perfil da mãe (idade, escolaridade, raça/cor,
+  município de residência). Responde perguntas sobre número de nascimentos,
+  taxa de cesáreas, gravidez na adolescência, prematuridade, baixo peso ao
+  nascer e cobertura do pré-natal por município e estado.
+
+palavras_chave: [nascimentos, nascidos vivos, parto, cesárea, pré-natal, gravidez na adolescência, baixo peso, prematuro, gestante, mãe, natalidade]
+
+perguntas_exemplo:
+  - Quantos bebês nasceram em Pernambuco em 2023?
+  - Qual o percentual de partos cesáreos por município de Pernambuco em 2022?
+  - Quantos nascimentos de mães com menos de 18 anos houve no Recife na última década?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por nascido vivo (uma Declaração de Nascido Vivo), por ano e UF de ocorrência.
+cobertura_temporal: { inicio: 1994, fim: 2026 }
+cobertura_geografica: nacional, com desagregação municipal (município de nascimento e de residência da mãe)
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano, sigla_uf]
+sem_particao: false
+volume_aproximado: 93.347.772 linhas (≈ 2,5 a 3 milhões por ano)
+observacoes: |
+  A UF e o município de partição são os de OCORRÊNCIA do nascimento. Para
+  indicadores por local de moradia, agrupe por `id_municipio_residencia`.
+  As colunas categóricas (sexo, raca_cor, tipo_parto, tipo_gravidez,
+  local_nascimento, escolaridade_mae, estado_civil_mae etc.) vêm CODIFICADAS
+  conforme o dicionário do SINASC, publicado na tabela
+  `basedosdados.br_ms_sinasc.dicionario`. Ex.: tipo_parto 1 = vaginal,
+  2 = cesáreo, 9 = ignorado; sexo 1 = masculino, 2 = feminino.
+  Os anos mais recentes vêm como dado preliminar (`dado_preliminar = '1'`)
+  e ainda podem mudar. Em 1994 e 1995 o número de abortos está somado a
+  `quantidade_filhos_mortos`.
+  Os nomes dos municípios devem ser buscados na API do IBGE, pois a tabela só
+  contém o código (id_municipio_*):
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano
+    tipo: INT64
+    descricao: Ano do nascimento.
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da UF onde ocorreu o nascimento.
+    particao: true
+    valores_exemplo: [PE, PB, AL, BA, SP]
+
+  - nome: id_municipio_nascimento
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município onde ocorreu o nascimento.
+
+  - nome: id_municipio_residencia
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município de residência da mãe.
+
+  - nome: local_nascimento
+    tipo: STRING
+    descricao: Local onde ocorreu o nascimento (codificado — hospital, outro estabelecimento de saúde, domicílio, outros).
+
+  - nome: codigo_estabelecimento
+    tipo: STRING
+    descricao: Código CNES do estabelecimento onde ocorreu o nascimento.
+
+  - nome: data_nascimento
+    tipo: DATE
+    descricao: Data do nascimento.
+
+  - nome: sexo
+    tipo: STRING
+    descricao: Sexo do recém-nascido (codificado).
+    valores_exemplo: ['1', '2', '0']
+    nota: 1 = masculino, 2 = feminino, 0 = ignorado — conferir no dicionário.
+
+  - nome: peso
+    tipo: INT64
+    descricao: Peso ao nascer, em gramas. Baixo peso é peso < 2500.
+
+  - nome: raca_cor
+    tipo: STRING
+    descricao: Raça/cor do recém-nascido (codificado).
+
+  - nome: apgar1
+    tipo: INT64
+    descricao: Índice de Apgar no 1º minuto de vida.
+
+  - nome: apgar5
+    tipo: INT64
+    descricao: Índice de Apgar no 5º minuto de vida.
+
+  - nome: id_anomalia
+    tipo: STRING
+    descricao: Indica se foi identificada anomalia congênita no nascimento (codificado).
+
+  - nome: codigo_anomalia
+    tipo: STRING
+    descricao: Código CID-10 da anomalia congênita.
+
+  - nome: semana_gestacao
+    tipo: INT64
+    descricao: Número de semanas de gestação. Prematuro é < 37 semanas.
+
+  - nome: gestacao_agr
+    tipo: STRING
+    descricao: Semanas de gestação em faixas (codificado).
+
+  - nome: tipo_gravidez
+    tipo: STRING
+    descricao: Tipo de gravidez — única, dupla, tripla ou mais (codificado).
+
+  - nome: tipo_parto
+    tipo: STRING
+    descricao: Tipo de parto (codificado).
+    valores_exemplo: ['1', '2', '9']
+    nota: 1 = vaginal, 2 = cesáreo, 9 = ignorado — conferir no dicionário.
+
+  - nome: inicio_pre_natal
+    tipo: STRING
+    descricao: Mês de gestação em que a mãe iniciou o pré-natal.
+
+  - nome: pre_natal
+    tipo: INT64
+    descricao: Número de consultas de pré-natal.
+
+  - nome: pre_natal_agr
+    tipo: STRING
+    descricao: Número de consultas de pré-natal em faixas (codificado).
+
+  - nome: idade_mae
+    tipo: INT64
+    descricao: Idade da mãe, em anos.
+
+  - nome: escolaridade_mae
+    tipo: STRING
+    descricao: Escolaridade da mãe, em anos de estudo concluídos (codificado).
+
+  - nome: estado_civil_mae
+    tipo: STRING
+    descricao: Situação conjugal da mãe (codificado).
+
+  - nome: raca_cor_mae
+    tipo: STRING
+    descricao: Raça/cor da mãe (codificado).
+
+  - nome: gestacoes_ant
+    tipo: INT64
+    descricao: Número de gestações anteriores.
+
+  - nome: quantidade_filhos_vivos
+    tipo: INT64
+    descricao: Número de filhos vivos da mãe.
+
+  - nome: quantidade_parto_cesareo
+    tipo: INT64
+    descricao: Número de partos cesáreos anteriores.
+
+  - nome: tipo_robson
+    tipo: STRING
+    descricao: Grupo de Robson (classificação de cesáreas), gerado pelo sistema.
+
+  - nome: idade_pai
+    tipo: INT64
+    descricao: Idade do pai, em anos.
+
+  - nome: dado_preliminar
+    tipo: STRING
+    descricao: Indica se o registro é preliminar (1) ou definitivo (0).
+    valores_exemplo: ['0', '1']
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Nascimentos e percentual de cesáreas em Pernambuco por ano, de 2019 a 2023.
+    sql: |
+      SELECT ano,
+             COUNT(*) AS nascimentos,
+             ROUND(100 * COUNTIF(tipo_parto = '2') / COUNT(*), 1) AS pct_cesarea
+      FROM `basedosdados.br_ms_sinasc.microdados`
+      WHERE ano BETWEEN 2019 AND 2023
+        AND sigla_uf = 'PE'
+      GROUP BY ano
+      ORDER BY ano
+
+  - pergunta: Nascidos vivos de mães adolescentes por município de residência em Pernambuco em 2022.
+    sql: |
+      SELECT id_municipio_residencia, COUNT(*) AS nascimentos_maes_adolescentes
+      FROM `basedosdados.br_ms_sinasc.microdados`
+      WHERE ano = 2022
+        AND sigla_uf = 'PE'
+        AND idade_mae BETWEEN 10 AND 19
+      GROUP BY id_municipio_residencia
+      ORDER BY nascimentos_maes_adolescentes DESC

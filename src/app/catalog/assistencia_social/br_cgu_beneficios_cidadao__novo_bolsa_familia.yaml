@@ -1,0 +1,129 @@
+# GABARITO — preencha e troque `status` para `ativo`.
+#
+# O formato completo, campo a campo, está em `catalog/_schema.yaml`.
+# Confira `dataset_id` e `table_id` contra a página da tabela na Base dos
+# Dados antes de ativar: eles são o que vai no FROM da consulta.
+#
+# Depois de editar:  make validar-catalogo
+#
+# Comissão ALEPE: Saúde e Assistência Social (CSAS) — Transferência de renda;
+# também Defesa da Pessoa com Deficiência — Benefícios e proteção social.
+
+# ─── IDENTIFICAÇÃO ────────────────────────────────────────────────
+id: br_cgu_beneficios_cidadao__novo_bolsa_familia
+dataset_id: br_cgu_beneficios_cidadao
+table_id: novo_bolsa_familia
+nome_exibicao: Novo Bolsa Família — Pagamentos
+area: assistencia_social
+fonte: Controladoria-Geral da União (CGU) — Portal da Transparência
+url_documentacao: https://basedosdados.org/dataset/a9a5b35d-2b41-4be5-be07-7256e713ba53?table=ab22fc2f-8fd1-4d0c-9a1d-e35491bbf8b3
+status: rascunho
+
+# ─── RESUMO (etapa 2 — é o ÚNICO texto que o modelo lê para escolher
+#     esta tabela; 3 a 6 linhas de prosa, mínimo de 20 palavras) ────
+resumo: >
+  Pagamentos do Novo Bolsa Família, o programa federal de transferência de
+  renda recriado em 2023, publicados pela CGU no Portal da Transparência.
+  Cada linha é a parcela mensal paga a um beneficiário (responsável
+  familiar), com o mês de competência, o município e o valor. Responde
+  perguntas sobre quantas famílias recebem o benefício em cada município,
+  quanto dinheiro o programa transfere por cidade e estado, valor médio da
+  parcela e evolução mensal da cobertura desde março de 2023.
+
+palavras_chave: [Bolsa Família, transferência de renda, benefício social, assistência social, pobreza, famílias beneficiárias, programa social, CadÚnico, Portal da Transparência]
+
+perguntas_exemplo:
+  - Quantas famílias receberam o Bolsa Família em cada município de Pernambuco em dezembro de 2024?
+  - Quanto o Bolsa Família transferiu para Pernambuco em 2024?
+  - Qual o valor médio da parcela do Bolsa Família no Recife em cada mês de 2025?
+
+# ─── CARACTERÍSTICAS ──────────────────────────────────────────────
+grao: Uma linha por parcela paga a um beneficiário, por mês de competência.
+cobertura_temporal: { inicio: 2023, fim: 2026 }
+cobertura_geografica: nacional, com desagregação municipal
+# Toda consulta gerada é obrigada a filtrar por estas colunas. Cada nome
+# aqui precisa existir em `colunas` com `particao: true`.
+particoes: [ano_competencia, mes_competencia, sigla_uf]
+sem_particao: false
+volume_aproximado: 829.248.075 linhas (≈ 20 milhões por mês)
+observacoes: |
+  Tabela MUITO grande: filtre sempre o ano, o(s) mês(es) de competência e a
+  UF. Para totais anuais, use `mes_competencia BETWEEN 1 AND 12`.
+  Cada linha é um beneficiário (em regra, o responsável familiar), então
+  COUNT(DISTINCT nis_favorecido) aproxima o número de FAMÍLIAS atendidas no
+  mês; somar meses conta a mesma família várias vezes.
+  A competência (mês a que a parcela se refere) pode diferir da folha de
+  pagamento (`ano_referencia`/`mes_referencia`); use a competência.
+  A série começa em março de 2023; pagamentos anteriores estão nas tabelas
+  `auxilio_brasil` e `bolsa_familia_pagamento` do mesmo conjunto.
+  Dados pessoais (CPF, NIS e nome do favorecido) existem na tabela mas foram
+  deixados FORA do catálogo de propósito: a aplicação só deve produzir
+  agregados, nunca listar pessoas. A coluna NIS é usada apenas para contagem
+  distinta.
+  Os nomes dos municípios devem ser buscados na API do IBGE:
+  https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios
+
+# ─── COLUNAS (etapa 3 — só as que alguém usaria de fato) ───────────
+colunas:
+  - nome: ano_competencia
+    tipo: INT64
+    descricao: Ano a que se refere a parcela.
+    particao: true
+
+  - nome: mes_competencia
+    tipo: INT64
+    descricao: Mês a que se refere a parcela (1 a 12).
+    particao: true
+
+  - nome: sigla_uf
+    tipo: STRING
+    descricao: Sigla da UF do beneficiário.
+    particao: true
+    valores_exemplo: [PE, PB, AL, BA]
+
+  - nome: ano_referencia
+    tipo: STRING
+    descricao: Ano da folha de pagamento.
+
+  - nome: mes_referencia
+    tipo: INT64
+    descricao: Mês da folha de pagamento.
+
+  - nome: id_municipio
+    tipo: STRING
+    descricao: Código IBGE de 7 dígitos do município do beneficiário.
+    nota: A documentação da Base dos Dados descreve esta coluna como "nome do município", mas ela contém o código IBGE.
+
+  - nome: nis_favorecido
+    tipo: STRING
+    descricao: NIS do beneficiário. Use SOMENTE em COUNT(DISTINCT ...) para contar famílias; nunca selecione nem exiba.
+
+  - nome: valor_parcela
+    tipo: FLOAT64
+    descricao: Valor da parcela paga, em reais.
+
+# ─── CONSULTAS DE EXEMPLO (duas ou três, ensinando o filtro de partição) ──
+consultas_exemplo:
+  - pergunta: Famílias beneficiárias e valor transferido por município de Pernambuco em dezembro de 2024.
+    sql: |
+      SELECT id_municipio,
+             COUNT(DISTINCT nis_favorecido) AS familias,
+             SUM(valor_parcela) AS valor_total
+      FROM `basedosdados.br_cgu_beneficios_cidadao.novo_bolsa_familia`
+      WHERE ano_competencia = 2024
+        AND mes_competencia = 12
+        AND sigla_uf = 'PE'
+      GROUP BY id_municipio
+      ORDER BY familias DESC
+
+  - pergunta: Valor total e parcela média mensal do Bolsa Família em Pernambuco em 2024.
+    sql: |
+      SELECT mes_competencia,
+             SUM(valor_parcela) AS valor_total,
+             ROUND(AVG(valor_parcela), 2) AS parcela_media
+      FROM `basedosdados.br_cgu_beneficios_cidadao.novo_bolsa_familia`
+      WHERE ano_competencia = 2024
+        AND mes_competencia BETWEEN 1 AND 12
+        AND sigla_uf = 'PE'
+      GROUP BY mes_competencia
+      ORDER BY mes_competencia
